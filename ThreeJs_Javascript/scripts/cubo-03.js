@@ -1,46 +1,42 @@
 // Components
-import {camera,scene,renderer,controls} from "../components/componentes_Escena"
-import {worldAxis,worldGrid} from "../components/componentes_world"
-import {light,helper, worldLight } from "../components/componentes_luces";
-import {cube} from "../components/geometria.js"
+import { camera, scene, renderer } from "../components/componentes_Escena_I"
+import { stats, controls ,background} from "../components/componentes_Escena_II"
+
+import { worldAxis, worldGrid, worldcolor, worldFloor, worlNiebla } from "../components/componentes_world"
+import { Luz } from "../components/componentes_luces";
+import { geometria3D, text } from "../components/geometria_texturas"
 
 init();
 animate();
 
 
-function init () {
+function init() {
 
-//🌱 PROPIEDADES
-camera.position.set(3,3, 5 );
-controls.autoRotate = true;
+  //🌱 PROPIEDADES
+  // controls.autoRotate = true;
+  background()
 
-//🌱 INSERTAR
-scene.add(cube);
+  //🌱 INSERTAR
+  geometria3D(undefined, text.Sombra);
 
-scene.add(light,helper,worldLight);
+  worldGrid();
+  worldAxis();
+  // worldFloor()
+  worlNiebla()
 
-scene.add(worldGrid,worldAxis);
-
-//EVENTOS
-window.addEventListener("resize", onWindowResize);
+  // worldLight()
+  Luz(worldcolor.orange,undefined, [-2, 2, 0], [0, 0, 0], true);
+  // Luz(undefined,undefined,[2,2,0])
 }
 
-// 💀 Funciones
-
-function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-}
 
 // 💀 Funciones Especiales
 
 function animate() {
-	requestAnimationFrame( animate );
+  requestAnimationFrame(animate);
+  stats.update();
   controls.update();
-  render();
+  
+  renderer.render(scene, camera);
 }
 
-function render () {
-	renderer.render( scene, camera );
-}

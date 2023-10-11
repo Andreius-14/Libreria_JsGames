@@ -1,47 +1,44 @@
 import * as THREE from 'three';
 
-// Esta Importando de Los Componentes Creados
-import {scene,camera,renderer, stats,controls} from '../components/componentes_Escena.js'
-import {worldAxis,worldGrid,worldFloor,worlNiebla,colores} from "../components/componentes_world.js";
-import {helper,light} from "../components/componentes_luces.js"
+// Basico 
+import {scene,camera,renderer} from '../components/componentes_Escena_I.js'
+import {stats,controls,background} from '../components/componentes_Escena_II.js'
+// Complementos
+import {worldAxis,worldGrid,worldFloor,worlNiebla,worldcolor} from "../components/componentes_world.js";
+import {geometria3D,geo,text} from "../components/geometria_texturas.js";
+import {helper,light,Luz} from "../components/componentes_luces.js"
 
-import { cube , geometria3D,geo} from "../components/geometria.js";
-
-let mesh;
+// CONSTANTES
 const group = new THREE.Group()
 
-init();
-animate();
 
-// const group = new THREE.Group()
-
+//FUNCIONES
 function init() {
 
-//Cambiando Propiedades
-scene.background = new THREE.Color( colores.grey );
+// PROPIEDADES
+// scene.background = new THREE.Color( worldcolor.grey );
+background()
 
-// AYUDA
-worldFloor(true,colores.red)
-worlNiebla(true,colores.grey)
+// INSERCION WORLD
 
+worldFloor()
+worlNiebla()
+worldGrid()
+worldAxis()
+
+// INSERCION LUCES
 scene.add(light, helper);
-scene.add(worldGrid,worldAxis)
-
+Luz(worldcolor.gray,1,[-2,2,0],undefined)
 
 // INSERCION GEOMEATRIA [Se puede Agrupar]
 
-// console.log(mesh);
-group.add(geometria3D(geo.cubo),geometria3D(geo.toru))
+group.add(geometria3D(geo.cubo,text.Sombra))
+group.add(geometria3D(geo.toru))
+group.add(geometria3D(geo.Capsula,text.Sombra,[3,3,1]))
+
 scene.add(group);
 
-window.addEventListener("resize", onWindowResize);
 
-}
-
-function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 // 🌱 Render [Especial se ejecuta continuamente]
@@ -50,19 +47,20 @@ function animate() {
     // mesh.rotation.x += 0.01;
     // mesh.rotation.y += 0.01;
 
-    group.children.forEach((objeto) => {
+    group.children.forEach((objeto,indice) => {
       // Realiza alguna acción en cada objeto
-      objeto.rotation.x += 0.01;
-      objeto.rotation.y += 0.01;
+      let i = (indice+1)
+      objeto.rotation.x += i * 0.01;
+      objeto.rotation.y += i * 0.01;
   });
 
   stats.update()
   controls.update();
-
 	renderer.render( scene, camera );
 }
 
-
+init();
+animate();
 
 
 // 🌱 En cubo-01 la camara se desplaza en PLANO CARTESIOANO 

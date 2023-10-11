@@ -1,6 +1,8 @@
 import * as THREE from "three";
-import { scene,camera,renderer,controls } from "../../components/componentes_Escena"
-import {worldAxis, worldGrid ,worlNiebla,worldFloor,colores} from '../../components/componentes_world.js'
+import { scene,camera,renderer } from "../../components/componentes_Escena_I"
+import {stats,controls,background} from '../../components/componentes_Escena_II';
+import {worldAxis, worldGrid ,worlNiebla,worldFloor,worldcolor} from '../../components/componentes_world.js'
+import {geometria3D,geo,text} from '../../components/geometria_texturas';
 
 animate();
 
@@ -9,8 +11,8 @@ dl.position.set(1, 3, 2);
 dl.target.position.set(0, 0, 0)
 const helper = new THREE.DirectionalLightHelper(dl); // GUI Vizualiza la Luz
 
-worldFloor()
-worlNiebla(true,colores.blue)
+// worldFloor()
+worlNiebla()
 
 scene.add(dl);
 scene.add(helper)
@@ -26,7 +28,8 @@ scene.add(helper)
 //-------- ----------
 // HELPER
 //-------- ----------
-scene.add(worldGrid,worldAxis)
+  worldGrid()
+  worldAxis()
 
 
 
@@ -34,6 +37,8 @@ const makeCube = (size, x, y, z) => {
     const mesh = new THREE.Mesh(
         new THREE.BoxGeometry(size, size, size),
         new THREE.MeshNormalMaterial());
+    // const mesh = geometria3D(geo.cubo,text.Sombra)
+
     mesh.position.set(x, y, z);
     return mesh;
 };
@@ -72,26 +77,15 @@ group.position.set(-4, 0, -4);
 // group.position.set(0, 0, 0);
 // group.rotation.z = Math.PI / 180 * 90;
 //EVENTOS
-window.addEventListener("resize", onWindowResize);
 
-
-// 💀 Funciones
-
-function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-}
 
 // 💀 RENDER
 function animate() {
 	requestAnimationFrame( animate );
+  stats.update();
   controls.update();
-  render();
-}
-
-function render () {
 	renderer.render( scene, camera );
 }
+
 camera.position.set(8, 8, 8);
 camera.lookAt(0, 0, 0);

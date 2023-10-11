@@ -1,0 +1,25 @@
+Mas Usados:
+------------
+	MeshBasicMaterial [color]
+	MeshLambertMaterial ==	MeshPhongMaterial	[Sombra Viva]
+	MeshStandardMaterial [Sombra Basica]
+	MeshDepthMaterial [sombras  raycasting]
+	MeshNormalMaterial [Drogas]
+	
+Interesantes:
+------------
+[se ve] MeshToonMaterial   	[Toon Estilo]
+	SpriteMaterial		[Imagen]
+	ShadowMaterial 		[recibe Sombras]
+	
+
+LineBasicMaterial
+LineDashedMaterial
+
+MeshDistanceMaterial
+MeshMatcapMaterial [Modo Blender]
+
+PointsMaterial
+RawShaderMaterial
+[No se ve] 	ShaderMaterial		[Sombra Avanzada] no
+		MeshPhysicalMaterial [Avanzado]
