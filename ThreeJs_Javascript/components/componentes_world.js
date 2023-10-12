@@ -40,5 +40,7 @@ export const worldcolor = {
   brown: 0x800000,
   grey: 0xe0e0e0,
   black: 0x000000,
+  dark_gray:0x404040,
+  white:0xffffff,
 };
 

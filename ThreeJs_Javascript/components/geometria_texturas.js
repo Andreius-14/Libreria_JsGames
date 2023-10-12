@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { scene } from './componentes_Escena_I.js'
-import { worldcolor} from './componentes_world.js';
 
 // const geometry = new THREE.BoxGeometry(1, 1, 1);
 // // const material = new THREE.MeshBasicMaterial( { color: 0x44aa88 } ); //!Sombra
@@ -12,9 +11,10 @@ import { worldcolor} from './componentes_world.js';
 // OBJETOS - VARIABLES
 export const text = {
     color: new THREE.MeshBasicMaterial({ color: 0x44aa88 }),
-    Sombra: new THREE.MeshStandardMaterial({ color: 0x44aa88 }),
+    Sombra: new THREE.MeshStandardMaterial(),
     Drogas: new THREE.MeshNormalMaterial(),
     recibeSombra: new THREE.ShadowMaterial(),
+    imagen:new THREE.TextureLoader(),
     // Agrega Mas
 };
 
@@ -29,7 +29,7 @@ export const geo = {
 };
 
 // FUNCIONES
-export const geometria3D = (geometria=geo.Esfera, textura=text.Drogas ,posicion=[0,0,0] ,color=worldcolor.verdeOscuro,escena = scene ) => {
+export const geometria3D = (geometria=geo.Esfera, textura=text.Drogas ,posicion=[0,0,0] ,color=0x00ff00,escena = scene ) => {
     const objeto = new THREE.Mesh(geometria, textura);
     objeto.position.set(...posicion)
     if (textura!=text.Drogas){
@@ -38,4 +38,17 @@ export const geometria3D = (geometria=geo.Esfera, textura=text.Drogas ,posicion=
     escena.add(objeto);
     return objeto;
 
+}
+
+export const geo3DImage = (geometria=geo.Esfera, ruta="" ,posicion=[0,0,0])=>{
+    const textura = text.imagen.load(ruta)
+    const material = text.Sombra;
+    material.map = textura;
+    
+    const objeto = new THREE.Mesh(geometria, material);
+    objeto.position.set(...posicion)
+
+    scene.add(objeto);
+    console.log(objeto);
+    return objeto;
 }

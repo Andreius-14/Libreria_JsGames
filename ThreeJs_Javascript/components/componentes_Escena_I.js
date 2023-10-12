@@ -1,16 +1,25 @@
+// Librerias
 import * as THREE from "three";
+
 // Constantes
 export const scene = new THREE.Scene();
-export const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 500 );
-export const renderer = new THREE.WebGLRenderer({antialias: true});
-export const box3D = document.body || document.getElementById("container");
-
-// Constantes - Propiedades
-// camera.position.z = 5;
-camera.position.set(3, 3, 5);
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth, window.innerHeight);
+export const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
+export const renderer = new THREE.WebGLRenderer({ antialias: true });
+export const box3D = document.getElementById("container") || document.body;
 
 
-// Insercion
-box3D.appendChild( renderer.domElement );
+// PROPIEDADES
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Propiedades
+    camera.position.set(3, 3, 5);
+
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x111111)  // Una mejora Vizual - No afecta la Iluminacion
+
+    box3D.appendChild(renderer.domElement);
+});
+
+// camera.updateProjectionMatrix();
+// renderer.setClearColor("#111")

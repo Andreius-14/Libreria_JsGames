@@ -14,10 +14,10 @@ function init() {
 
   //🌱 PROPIEDADES
   // controls.autoRotate = true;
-  background()
+  // background()
 
   //🌱 INSERTAR
-  geometria3D(undefined, text.Sombra);
+  geometria3D(undefined, text.color);
 
   worldGrid();
   worldAxis();
