@@ -91,13 +91,18 @@ export const geo3DImage = (geometria = geo.Esfera(), ruta = "", posicion = [0, 0
     return _3D;
 }
 
-export const AddImageNormal = (objeto, ruta = "") => {
+export const AddImageNormal = (objeto, ruta = "",intensidadV2=[20,20]) => {
+    // [Superficie Rugosa]
     objeto.material.normalMap = loadImage(ruta);
+    objeto.material.normalScale = new THREE.Vector2(...intensidadV2);
     // console.log(objeto.material.normalMap);
 }
-export const AddImageAmbientOcclusion = (objeto, ruta) => {
+export const AddImageAO = (objeto, ruta, intensidad=0.5) => {
+    // [sombra] - [Intensidad: 0 - 1]
     objeto.material.aoMap = loadImage(ruta);
+    objeto.material.aoMapIntensity = intensidad ;
 }
+
 export const AddImageAlphaMap = (objeto, ruta) => {
     objeto.material.alphaMap = loadImage(ruta);
     objeto.material.transparent = true;

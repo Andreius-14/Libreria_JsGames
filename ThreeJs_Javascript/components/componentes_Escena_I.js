@@ -3,7 +3,8 @@ import * as THREE from "three";
 
 // Constantes
 export const scene = new THREE.Scene();
-export const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
+// export const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
+export const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000); //Recomendado
 export const renderer = new THREE.WebGLRenderer({ antialias: true });
 export const box3D = document.getElementById("container") || document.body;
 

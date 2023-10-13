@@ -8,7 +8,7 @@ import { stats, controls, background } from '../components/componentes_Escena_II
 import { worldGrid, worldcolor } from "../components/componentes_world.js";
 import { worldLight, Luz } from "../components/componentes_luces";
 import { geometria3D, geo, text } from "../components/geometria_texturas.js";
-import { geo3DImage,AddImageNormal, AddImageAmbientOcclusion, AddImageAlphaMap } from "../components/geometria_texturas.js";
+import { geo3DImage,AddImageNormal, AddImageAO, AddImageAlphaMap } from "../components/geometria_texturas.js";
 
 let mesh = "";
 var niebla = "";
@@ -18,11 +18,11 @@ var niebla = "";
 // background(worldcolor.dark_gray);
 worldLight(worldcolor.dark_gray)
 worldGrid()
-Luz(worldcolor.red,1,[-5,0,0],undefined,true)
 // camera.position.set(0,0,0)
 
 // LUCES - GEOMETRIS
-Luz(undefined, 1, [5, 0, 0])
+// Luz(worldcolor.red,0.5,[-5,0,0],undefined,true)
+Luz(undefined, 1, [3, 0, 0])
 
 let valor1 = geometria3D(undefined,text.Sombra(),[0,3], worldcolor.brown)
 let valor2 = geometria3D(undefined,text.Sombra(),[2,2])
@@ -33,26 +33,27 @@ let valor3 = geometria3D(undefined,undefined,[-2,2],worldcolor.blue)
 
 mesh = geo3DImage(geo.Esfera(), "../assets/2k_earth_daymap.jpg")
 AddImageNormal(mesh, "../assets/2k_earth_normal_map.png")
-AddImageAmbientOcclusion(mesh, "../assets/2k_earth_specular_map.png")
+AddImageAO(mesh, "../assets/2k_earth_specular_map.png")
 
 // scene.add(mesh)
 // niebla.material.transparent
 
+//Si ve menos claro entre el tuto - Es por que el Usa la version 151.3
 niebla = geo3DImage(geo.Esfera(0.71),"",[0,0,0]);
 AddImageAlphaMap(niebla,"../assets/2k_earth_cloud.jpg")
 
 // console.log(mesh.material.map.source);
-
+let rotacion = 0.005
 
 function animate() {
     stats.update();
     controls.update();
 
     if (mesh) {
-        mesh.rotation.y += 0.001;
+        mesh.rotation.y +=rotacion;
     }
     if (niebla) {
-        niebla.rotation.y -= 0.0005;
+        niebla.rotation.y +=rotacion ;
     }
 
     requestAnimationFrame(animate);
