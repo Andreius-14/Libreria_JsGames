@@ -12,7 +12,7 @@ export const box3D = document.getElementById("container") || document.body;
 document.addEventListener("DOMContentLoaded", function () {
 
     // Propiedades
-    camera.position.set(3, 3, 5);
+    camera.position.set(0, 0, 5);
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.setSize(window.innerWidth, window.innerHeight);
