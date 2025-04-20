@@ -1,0 +1,3 @@
+[submodule "JS-Shared"]
+	path = JS-Shared
+	url = git@github.com:Andreius-14/JS-Shared.git
