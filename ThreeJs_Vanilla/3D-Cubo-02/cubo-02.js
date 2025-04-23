@@ -1,8 +1,8 @@
 import * as THREE from "three";
 
-// Basico 
-import {scene,camera,renderer,box3D} from '../components/componentes_Escena_I.js'
-import {stats,controls,background} from '../components/componentes_Escena_II.js'
+// Basico
+import { scene, camera, renderer } from "../JS-Shared/threejs_Escena_I.js";
+import { stats, controls, background } from "../JS-Shared/threejs_Escena_II.js";
 
 // import { OrbitControls } from "three/addons/controls/OrbitControls.js"; // cuando se aplica la camara siempre apuntara a 0,0,0
 // Campos - Instancias
@@ -15,7 +15,6 @@ animate();
 
 // Funciones
 function init() {
-
   // Instancia e Propiedades
   // scene = new THREE.Scene();
   // camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 1000,);
@@ -30,30 +29,24 @@ function init() {
   texture.colorSpace = THREE.SRGBColorSpace;
 
   const geometry = new THREE.BoxGeometry(1, 1, 1);
-  const material = new THREE.MeshBasicMaterial({ map: texture });     
+  const material = new THREE.MeshBasicMaterial({ map: texture });
   //({ color: 0x44aa88 }) ({ map: texture })
- 
+
   mesh = new THREE.Mesh(geometry, material);
 
-
-
   // GEOMETRIA NUEVA - CUBO [Final]
-
 
   // controls = new OrbitControls(camera, renderer.domElement);
   // // controls.target.set(0, 0.5, 0);
   // controls.enablePan = false;   // Desplazar X,Y de Camara
   // controls.enableDamping = true;
   // controls.autoRotate = true;
-  // controls.update(); 
+  // controls.update();
 
-  
   scene.add(mesh);
   // INSERCION
   // document.body.appendChild(renderer.domElement);
-
 }
-
 
 function animate() {
   requestAnimationFrame(animate);
@@ -61,10 +54,9 @@ function animate() {
   mesh.rotation.y += 0.01;
 
   stats.update();
-  controls.update(); 
-  // INSERCION 
+  controls.update();
+  // INSERCION
   renderer.render(scene, camera);
 }
 
 // 🌱 La funcion animate es Especial - Se ejecuta de Manera Continua FPS
-
