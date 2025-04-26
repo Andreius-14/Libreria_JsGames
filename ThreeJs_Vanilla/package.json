@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "standard": "^17.1.2",
     "vite": "^6.3.1"
   },
   "dependencies": {

@@ -2,12 +2,7 @@ import * as THREE from "three";
 
 import { camera, renderer, scene } from "../JS-Shared/threejs_Escena_I.js";
 import { controls, stats } from "../JS-Shared/threejs_Escena_II.js";
-import {
-  worldAxis,
-  worldGrid,
-  worldFloor,
-  worlNiebla,
-} from "../JS-Shared/threejs_world.js";
+import { World } from "../JS-Shared/threejs_world.js";
 import { worldColor } from "../JS-Shared/Shared-Const.js";
 //-------- ----------
 // SCENE, CAMERA, RENDERER
@@ -32,10 +27,11 @@ camera.lookAt(0, 0, 0);
 function init() {
   // INSERCION WORLD
 
-  worldFloor();
-  worlNiebla();
-  worldGrid();
-  worldAxis();
+  World.Floor();
+  World.Niebla();
+  World.Grid();
+  World.Axis();
+  World.Light();
 
   while (i < count) {
     // creating a mesh

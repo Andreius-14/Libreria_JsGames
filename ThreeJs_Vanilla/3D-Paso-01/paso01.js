@@ -1,13 +1,8 @@
 import * as THREE from "three";
 import { scene, camera, renderer } from "../JS-Shared/threejs_Escena_I.js";
-import { stats, controls, background } from "../JS-Shared/threejs_Escena_II.js";
-import {
-  worldAxis,
-  worldGrid,
-  worlNiebla,
-  worldFloor,
-} from "../JS-Shared/threejs_world.js";
-import { geometria3D, geo, text } from "../JS-Shared/threejs_texturas.js";
+import { stats, controls } from "../JS-Shared/threejs_Escena_II.js";
+import { World } from "../JS-Shared/threejs_world.js";
+import { geometria3D, geo, materiales } from "../JS-Shared/threejs_texturas.js";
 import { worldColor } from "../JS-Shared/Shared-Const.js";
 animate();
 
@@ -17,7 +12,10 @@ dl.target.position.set(0, 0, 0);
 const helper = new THREE.DirectionalLightHelper(dl); // GUI Vizualiza la Luz
 
 // worldFloor()
-worlNiebla();
+World.Niebla();
+World.Background();
+World.Grid();
+World.Axis();
 
 scene.add(dl);
 scene.add(helper);
@@ -33,15 +31,13 @@ scene.add(helper);
 //-------- ----------
 // HELPER
 //-------- ----------
-worldGrid();
-worldAxis();
 
 const makeCube = (size, x, y, z) => {
   const mesh = new THREE.Mesh(
     new THREE.BoxGeometry(size, size, size),
     new THREE.MeshNormalMaterial(),
   );
-  // const mesh = geometria3D(geo.cubo,text.Sombra)
+  // const mesh = geometria3D(geo.cubo,texturas.Sombra)
 
   mesh.position.set(x, y, z);
   return mesh;

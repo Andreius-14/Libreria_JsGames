@@ -3,18 +3,14 @@
 
 // Basico
 import { scene, camera, renderer } from "../JS-Shared/threejs_Escena_I.js";
-import {
-  stats,
-  controls,
-  //background,
-} from "../JS-Shared/threejs_Escena_II.js";
+import { stats, controls } from "../JS-Shared/threejs_Escena_II.js";
 // Componentes Extra
-import { worldGrid } from "../JS-Shared/threejs_world.js";
-import { worldLight, Luz } from "../JS-Shared/threejs_luces.js";
-import { geometria3D, geo, text } from "../JS-Shared/threejs_texturas.js";
+import { World } from "../JS-Shared/threejs_world.js";
+import { Luces } from "../JS-Shared/threejs_luces.js";
+import { geometria3D, geo, materiales } from "../JS-Shared/threejs_texturas.js";
 import {
-  geo3DImage,
-  AddImageNormal,
+  AddImageMap,
+  AddImageNormalMap,
   AddImageAO,
   AddImageAlphaMap,
 } from "../JS-Shared/threejs_texturas.js";
@@ -22,38 +18,54 @@ import {
 import { worldColor } from "../JS-Shared/Shared-Const.js";
 
 let mesh = "";
-var niebla = "";
-// camera.position.set(0, 0, 5);
+let niebla = "";
+const rotacion = 0.005;
 
-// ESCENARIO
-// background(worldcolor.dark_gray);
-worldLight(worldcolor.dark_gray);
-worldGrid();
-// camera.position.set(0,0,0)
+function init() {
+  // camera.position.set(0, 0, 5);
 
-// LUCES - GEOMETRIS
-// Luz(worldcolor.red,0.5,[-5,0,0],undefined,true)
-Luz(undefined, 1, [3, 0, 0]);
+  // ESCENARIO
+  // background(worldColor.dark_gray);
+  World.Light(worldColor.dark_gray);
+  World.Grid();
+  // camera.position.set(0,0,0)
 
-let valor1 = geometria3D(undefined, text.Sombra(), [0, 3], worldcolor.brown);
-let valor2 = geometria3D(undefined, text.Sombra(), [2, 2]);
-let valor3 = geometria3D(undefined, undefined, [-2, 2], worldcolor.blue);
+  // LUCES - GEOMETRIS
+  // Luz(worldColor.red,0.5,[-5,0,0],undefined,true)
+  Luces.Direccional(undefined, 1, [3, 0, 0]);
 
-// geometria3D(geo.Capsula(),text.Sombra,[0,4,0])
+  // geometria3D(geo.Capsula(),materiales.Sombra,[0,4,0])
 
-mesh = geo3DImage(geo.Esfera(), "../assets/2k_earth_daymap.jpg");
-AddImageNormal(mesh, "../assets/2k_earth_normal_map.png");
-AddImageAO(mesh, "../assets/2k_earth_specular_map.png");
+  //----------------------------------------------------------------//
+  //                        OBJETOS
+  //----------------------------------------------------------------//
 
-// scene.add(mesh)
-// niebla.material.transparent
+  mesh = geometria3D({ material: materiales.recibeImagen() });
+  niebla = geometria3D({
+    geometria: geo.Esfera(0.72),
+    material: materiales.recibeImagen(),
+  });
 
-//Si ve menos claro entre el tuto - Es por que el Usa la version 151.3
-niebla = geo3DImage(geo.Esfera(0.71), "", [0, 0, 0]);
-AddImageAlphaMap(niebla, "../assets/2k_earth_cloud.jpg");
+  geometria3D({ material: materiales.Sombra(), posicion: [0, 3] });
+  geometria3D({ material: materiales.Sombra(), posicion: [2, 2] });
+  geometria3D({ posicion: [-2, 2], color: worldColor.blue });
+  //----------------------------------------------------------------//
+  //                      PROPIEDADES
+  //----------------------------------------------------------------//
 
-// console.log(mesh.material.map.source);
-let rotacion = 0.005;
+  // MESH
+  AddImageMap(mesh, "../assets/2k_earth_daymap.jpg");
+  AddImageNormalMap(mesh, "../assets/2k_earth_normal_map.png", [20, 20]);
+  AddImageAO(mesh, "../assets/2k_earth_specular_map.png");
+
+  // NIEBLA
+  AddImageAlphaMap(niebla, "../assets/2k_earth_cloud.jpg");
+  // niebla.material.transparent
+
+  //Si ve menos claro entre el tuto - Es por que el Usa la version 151.3
+
+  // console.log(mesh.material.map.source);
+}
 
 function animate() {
   stats.update();
@@ -63,12 +75,12 @@ function animate() {
     mesh.rotation.y += rotacion;
   }
   if (niebla) {
-    niebla.rotation.y += rotacion;
+    niebla.rotation.y += rotacion + 0.001;
   }
 
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
 }
 
-// init();
+init();
 animate();

@@ -1,17 +1,12 @@
 // Components
 import { camera, scene, renderer } from "../JS-Shared/threejs_Escena_I.js";
-import { stats, controls, background } from "../JS-Shared/threejs_Escena_II.js";
+import { stats, controls } from "../JS-Shared/threejs_Escena_II.js";
 
 // Complementos
-import {
-  worldAxis,
-  worldGrid,
-  worldFloor,
-  worlNiebla,
-} from "../JS-Shared/threejs_world.js";
+import { World } from "../JS-Shared/threejs_world.js";
+import { Luces } from "../JS-Shared/threejs_luces.js";
 
-import { Luz } from "../JS-Shared/threejs_luces.js";
-import { geometria3D, text } from "../JS-Shared/threejs_texturas.js";
+import { geometria3D, materiales } from "../JS-Shared/threejs_texturas.js";
 
 import { worldColor } from "../JS-Shared/Shared-Const.js";
 
@@ -21,19 +16,30 @@ animate();
 function init() {
   //🌱 PROPIEDADES
   // controls.autoRotate = true;
-  // background()
 
   //🌱 INSERTAR
-  geometria3D(undefined, text.color);
+  geometria3D({ material: materiales.Sombra() });
+  geometria3D({
+    material: materiales.Sombra(),
+    posicion: [2, 2],
+    color: worldColor.yellow,
+  });
+  geometria3D({
+    material: materiales.Sombra(),
+    posicion: [-2, 2],
+    color: worldColor.blue,
+  });
 
-  worldGrid();
-  worldAxis();
-  // worldFloor()
-  worlNiebla();
+  //World.Background();
+  World.Grid();
+  World.Axis();
+  World.Floor();
+  //World.Niebla();
+  World.Light();
 
-  // worldLight()
-  Luz(worldColor.green, undefined, [-2, 2, 0], [0, 0, 0], true);
-  // Luz(undefined,undefined,[2,2,0])
+  Luces.Direccional(worldColor.green, 0.3, [0, 2, 0], [2, 2, 0], true);
+  Luces.Focal(worldColor.blue, 250, 15, 0.5, 1, [5, 5, 0], [5, 0, 0], true);
+  Luces.Focal(worldColor.red, 250, 15, 0.5, 1, [-5, 5, 0], [-5, 0, 0], true);
 }
 
 // 💀 Funciones Especiales
