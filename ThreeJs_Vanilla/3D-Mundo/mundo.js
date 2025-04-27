@@ -2,8 +2,13 @@
 //import * as THREE from "three";
 
 // Basico
-import { scene, camera, renderer } from "../JS-Shared/threejs_Escena_I.js";
-import { stats, controls } from "../JS-Shared/threejs_Escena_II.js";
+import {
+  scene,
+  camera,
+  renderer,
+  stats,
+  controls,
+} from "../JS-Shared/threejs_Escena_I.js";
 // Componentes Extra
 import { World } from "../JS-Shared/threejs_world.js";
 import { Luces } from "../JS-Shared/threejs_luces.js";
