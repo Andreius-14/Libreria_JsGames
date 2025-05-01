@@ -78,8 +78,7 @@ function createGUI(model, animations) {
   //----------------------------------------------------------------//
   //                      VARIABLES - GUI
   //----------------------------------------------------------------//
-  // Instancia
-  gui = new GUI();
+
   // GUI - Array
   const states = [
     "Idle",
@@ -97,13 +96,12 @@ function createGUI(model, animations) {
   //----------------------------------------------------------------//
   //                        VARIABLES
   //----------------------------------------------------------------//
-
-  // Intancia
+  // Instancia
   mixer = new THREE.AnimationMixer(model);
 
-  // --> Recorre Animaciones
+  // Recorre Animaciones
   for (let i = 0; i < animations.length; i++) {
-    //--> Aisla Animacion
+    //--> Selecciona la Primera Animacion
     const clip = animations[i];
     //--> Carga Animacion
     const action = mixer.clipAction(clip);
@@ -124,32 +122,35 @@ function createGUI(model, animations) {
 
   face = model.getObjectByName("Head_4");
 
-  // Folder
+  // GUI - Variables
+  gui = new GUI();
   const statesFolder = gui.addFolder("States");
   const emoteFolder = gui.addFolder("Emotes");
   const expressionFolder = gui.addFolder("Expressions");
 
+  statesFolder.open();
+  emoteFolder.open();
+  expressionFolder.open();
+
+  // GUI - Insertar Valores
   const clipCtrl = statesFolder.add(api, "state").options(states);
   const expressions = Object.keys(face.morphTargetDictionary);
 
-  // Ejecuta Animacion
-  clipCtrl.onChange(function () {
-    fadeToAction(api.state, 0.5);
-  });
-
-  for (let i = 0; i < emotes.length; i++) {
-    createEmoteCallback(emotes[i]);
-  }
+  // GUI - FOR
   for (let i = 0; i < expressions.length; i++) {
     expressionFolder
       .add(face.morphTargetInfluences, i, 0, 1, 0.01)
       .name(expressions[i]);
   }
+  for (let i = 0; i < emotes.length; i++) {
+    createEmoteCallback(emotes[i]);
+  }
 
-  // Estado
-  statesFolder.open();
-  emoteFolder.open();
-  expressionFolder.open();
+  // Animacion - Cambio
+  clipCtrl.onChange(function () {
+    fadeToAction(api.state, 0.5);
+  });
+
   //----------------------------------------------------------------//
   //                        EMOTES
   //----------------------------------------------------------------//
