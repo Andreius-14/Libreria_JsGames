@@ -63,11 +63,8 @@ async function init() {
   Luces.Direccional(scene, [0, 20, 10]);
 
   // model - NUEVO AQUI - Modularizado Ya
-
-  const [modelo, animaciones] = await cargarModeloGlb(
-    "./RobotExpressive/RobotExpressive.glb",
-  );
-  scene.add(modelo);
+  const rutaModelo = "./3D-Threejs/RobotExpressive/RobotExpressive.glb";
+  const [modelo, animaciones] = await cargarModeloGlb(scene, rutaModelo);
   createGUI(modelo, animaciones);
 }
 //----------------------------------------//
@@ -94,17 +91,17 @@ function createGUI(model, animations) {
   actions = {};
 
   //----------------------------------------------------------------//
-  //                        VARIABLES
+  //                        MIXER
   //----------------------------------------------------------------//
   // Instancia
   mixer = new THREE.AnimationMixer(model);
 
   // Recorre Animaciones
   for (let i = 0; i < animations.length; i++) {
-    //--> Selecciona la Primera Animacion
-    const clip = animations[i];
-    //--> Carga Animacion
-    const action = mixer.clipAction(clip);
+    const clip = animations[i]; //--> Primera Animacion
+    const action = mixer.clipAction(clip); //--> Carga Animacion
+
+    // Rrellena el Objeto Actions
     actions[clip.name] = action;
 
     if (emotes.indexOf(clip.name) >= 0 || states.indexOf(clip.name) >= 4) {
@@ -112,7 +109,6 @@ function createGUI(model, animations) {
       action.loop = THREE.LoopOnce;
     }
   }
-
   activeAction = actions["Walking"];
   activeAction.play();
 
@@ -132,28 +128,34 @@ function createGUI(model, animations) {
   emoteFolder.open();
   expressionFolder.open();
 
+  // De AQui en Adelante no lo entiendo
   // GUI - Insertar Valores
   const clipCtrl = statesFolder.add(api, "state").options(states);
-  const expressions = Object.keys(face.morphTargetDictionary);
 
-  // GUI - FOR
-  for (let i = 0; i < expressions.length; i++) {
-    expressionFolder
-      .add(face.morphTargetInfluences, i, 0, 1, 0.01)
-      .name(expressions[i]);
-  }
-  for (let i = 0; i < emotes.length; i++) {
-    createEmoteCallback(emotes[i]);
-  }
-
-  // Animacion - Cambio
+  // Animacion - Tiempo de Demora entre cambio de animacion
   clipCtrl.onChange(function () {
     fadeToAction(api.state, 0.5);
   });
 
   //----------------------------------------------------------------//
+  //                        Expressions
+  //----------------------------------------------------------------//
+
+  const expressions = Object.keys(face.morphTargetDictionary);
+
+  for (let i = 0; i < expressions.length; i++) {
+    expressionFolder
+      .add(face.morphTargetInfluences, i, 0, 1, 0.01)
+      .name(expressions[i]);
+  }
+
+  //----------------------------------------------------------------//
   //                        EMOTES
   //----------------------------------------------------------------//
+
+  for (let i = 0; i < emotes.length; i++) {
+    createEmoteCallback(emotes[i]);
+  }
 
   function createEmoteCallback(name) {
     api[name] = function () {
