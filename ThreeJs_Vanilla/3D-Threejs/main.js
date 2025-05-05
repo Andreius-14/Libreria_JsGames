@@ -20,7 +20,7 @@ import { Luces } from "../JS-Shared/threejs/Luces.js";
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 
 import { EventoFullScreen, EventoResize } from "../JS-Shared/threejs/Evento.js";
-import { cargarModeloGlb } from "../JS-Shared/threejs/Texturas.js";
+import { cargarModeloGlb } from "../JS-Shared/threejs/model.js";
 
 //----------------------------------------------------------------//
 //                        VARIABLES
@@ -96,6 +96,12 @@ function createGUI(model, animations) {
   // Instancia
   mixer = new THREE.AnimationMixer(model);
 
+  // action = {
+  //       "animacion1" : mixer.clipAction(clip),
+  //       "animacion2" : mixer.clipAction(clip),
+  //       "animacion3" : mixer.clipAction(clip),
+  //       "animacion4" : mixer.clipAction(clip),
+  //   }
   // Recorre Animaciones
   for (let i = 0; i < animations.length; i++) {
     const clip = animations[i]; //--> Primera Animacion
@@ -109,6 +115,7 @@ function createGUI(model, animations) {
       action.loop = THREE.LoopOnce;
     }
   }
+  console.log(actions);
   activeAction = actions["Walking"];
   activeAction.play();
 
