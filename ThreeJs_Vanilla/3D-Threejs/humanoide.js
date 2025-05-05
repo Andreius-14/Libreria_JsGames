@@ -13,11 +13,11 @@ import {
 } from "../JS-Shared/threejs/Escena.js";
 
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { World } from "../JS-Shared/threejs/World.js";
+import { Model } from "../JS-Shared/threejs/model.js";
+
 import { AddShadowtoDireccional, Luces } from "../JS-Shared/threejs/Luces.js";
 import { EventoFullScreen, EventoResize } from "../JS-Shared/threejs/Evento.js";
-import { cargarModeloGlb } from "../JS-Shared/threejs/Texturas.js";
 
 let container, scene, renderer, camera, stats, controls;
 let model, skeleton, mixer, clock, animations;
@@ -32,11 +32,15 @@ let singleStepMode = false;
 let sizeOfNextStep = 0;
 
 const objetivo = [0, 1, 0];
+const rutaModelo = "./3D-Threejs/Soldier/Soldier.glb";
 
 init();
 
 async function init() {
-  // CORE
+  //----------------------------------------------------------------//
+  //                        CORE
+  //----------------------------------------------------------------//
+
   container = createContenedor("contenedor3D");
   camera = createCamara();
   scene = createScene();
@@ -59,6 +63,10 @@ async function init() {
   EventoResize(camera, renderer);
   EventoFullScreen(renderer);
 
+  //----------------------------------------------------------------//
+  //                        ESCENA 3D
+  //----------------------------------------------------------------//
+
   // ESCENA I
   World.Background(scene, 0xa0a0a0);
   World.Niebla(scene, 0xa0a0a0, 10, 50);
@@ -71,26 +79,26 @@ async function init() {
   AddShadowtoDireccional(scene, sol[0]);
 
   // MODELO
-  const rutaModelo = "./3D-Threejs/Soldier/Soldier.glb";
-  [model, animations] = await cargarModeloGlb(scene, rutaModelo);
+
+  [model, animations] = await Model.load(scene, rutaModelo);
+  // MODELO - SKELETON
+  skeleton = Model.skeletonHelper(scene, model);
+  // MODELO - MIXER
+  mixer = Model.mixer(model);
+
+  // MODELO - ANIMACIONES
+  const grupoDeAnimacion = Model.groupAnimation(mixer, animations);
+  // console.log(Object.keys(grupoDeAnimacion));
+
+  idleAction = grupoDeAnimacion.Idle; // mixer.clipAction(animations[0]);
+  runAction = grupoDeAnimacion.Run; //   mixer.clipAction(animations[3]);
+  walkAction = grupoDeAnimacion.Walk; // mixer.clipAction(animations[3]);
+
+  actions = [idleAction, walkAction, runAction];
 
   model.traverse((object) => {
     if (object.isMesh) object.castShadow = true;
   });
-
-  // MODELO - ESQUELETO
-  skeleton = new THREE.SkeletonHelper(model);
-  skeleton.visible = false;
-  scene.add(skeleton);
-
-  // MODELO - ANIMACION
-  mixer = new THREE.AnimationMixer(model);
-
-  idleAction = mixer.clipAction(animations[0]);
-  walkAction = mixer.clipAction(animations[3]);
-  runAction = mixer.clipAction(animations[1]);
-
-  actions = [idleAction, walkAction, runAction];
 
   createPanel();
   activateAllActions();
