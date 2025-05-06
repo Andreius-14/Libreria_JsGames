@@ -15,12 +15,12 @@ import {
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 import { World } from "../JS-Shared/threejs/World.js";
 import { Model } from "../JS-Shared/threejs/model.js";
+import { Luces } from "../JS-Shared/threejs/Luces.js";
 
-import { AddShadowtoDireccional, Luces } from "../JS-Shared/threejs/Luces.js";
 import { EventoFullScreen, EventoResize } from "../JS-Shared/threejs/Evento.js";
 
 let container, scene, renderer, camera, stats, controls;
-let model, skeleton, mixer, clock, animations;
+let all, model, skeleton, mixer, clock, animations;
 
 const crossFadeControls = [];
 
@@ -42,7 +42,7 @@ async function init() {
   //----------------------------------------------------------------//
 
   container = createContenedor("contenedor3D");
-  camera = createCamara();
+  camera = createCamara({ posicion: [1, 2, -3], objetivo: objetivo });
   scene = createScene();
   renderer = createRenderer({ sombra: true });
 
@@ -55,9 +55,6 @@ async function init() {
   config_Estilos();
   config_Renderer(renderer, container);
   config_Animation(renderer, animate);
-  // CONFIG - E
-  camera.position.set(1, 2, -3);
-  camera.lookAt(...objetivo);
 
   // EVENTO
   EventoResize(camera, renderer);
@@ -73,32 +70,21 @@ async function init() {
   World.HemisphereLight(scene, [0, 20, 0]);
   World.Floor(scene, 0xcbcbcb, 100, { recibeSombra: true });
   World.Grid(scene);
-
-  // ESCENA II
-  const sol = Luces.Sol(scene, [-3, 5, -10]);
-  AddShadowtoDireccional(scene, sol[0]);
+  Luces.Sol(scene, [-3, 5, -10], { generaSombra: true });
 
   // MODELO
-
   [model, animations] = await Model.load(scene, rutaModelo);
-  // MODELO - SKELETON
-  skeleton = Model.skeletonHelper(scene, model);
-  // MODELO - MIXER
+  Model.enableShadows(model);
+
   mixer = Model.mixer(model);
+  skeleton = Model.skeletonHelper(scene, model);
+  const group = Model.groupAnimation(mixer, animations); // console.log(Object.keys(group));
 
-  // MODELO - ANIMACIONES
-  const grupoDeAnimacion = Model.groupAnimation(mixer, animations);
-  // console.log(Object.keys(grupoDeAnimacion));
-
-  idleAction = grupoDeAnimacion.Idle; // mixer.clipAction(animations[0]);
-  runAction = grupoDeAnimacion.Run; //   mixer.clipAction(animations[3]);
-  walkAction = grupoDeAnimacion.Walk; // mixer.clipAction(animations[3]);
+  idleAction = group.Idle; // mixer.clipAction(animations[0]);
+  runAction = group.Run; //   mixer.clipAction(animations[3]);
+  walkAction = group.Walk; // mixer.clipAction(animations[3]);
 
   actions = [idleAction, walkAction, runAction];
-
-  model.traverse((object) => {
-    if (object.isMesh) object.castShadow = true;
-  });
 
   createPanel();
   activateAllActions();
@@ -251,6 +237,7 @@ function activateAllActions() {
 //                        FOLDER3
 //----------------------------------------------------------------//
 
+//Es un Toggle
 function pauseContinue() {
   if (singleStepMode) {
     singleStepMode = false;
@@ -280,7 +267,7 @@ function toSingleStepMode() {
   singleStepMode = true;
   sizeOfNextStep = settings["modify step size"];
 }
-
+// HASTA AQUI ENTENDIDO
 //----------------------------------------------------------------//
 //                        CROSS
 //----------------------------------------------------------------//
