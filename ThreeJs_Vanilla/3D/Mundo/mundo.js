@@ -2,12 +2,21 @@
 //import * as THREE from "three";
 
 import {
-  scene,
-  camera,
-  renderer,
-  stats,
-  controls,
-} from "../../JS-Shared/threejs/Main.js";
+  config_Animation,
+  config_Estilos,
+  config_Renderer,
+  createCamara,
+  createContenedor,
+  createControls,
+  createRenderer,
+  createScene,
+  createStats,
+} from "../../JS-Shared/threejs/Escena.js";
+
+import {
+  EventoFullScreen,
+  EventoResize,
+} from "../../JS-Shared/threejs/Evento.js";
 // Componentes Extra
 import { World } from "../../JS-Shared/threejs/World.js";
 import { Luces } from "../../JS-Shared/threejs/Luces.js";
@@ -18,25 +27,56 @@ import {
   materiales,
 } from "../../JS-Shared/threejs/Geometria.js";
 
-import { worldColor } from "../../JS-Shared/Shared-Const.js";
-
 //----------------------------------------------------------------//
 //                        VARIABLES
 //----------------------------------------------------------------//
+
+// CORE
+let container, camera, scene, renderer;
+// ADOON
+let stats, controls;
+
+// MODEL
 let mesh = "";
 let niebla = "";
+const objetivo = [0, 0, 0];
 const rotacion = 0.005;
 
-function init() {
-  // ESCENARIO
-  World.Light(scene);
-  World.Grid(scene);
+init();
 
-  // LUCES
-  Luces.Sol(scene, [5, 0, 0]);
+function init() {
+  //----------------------------------------------------------------//
+  //                        CORE
+  //----------------------------------------------------------------//
+
+  scene = createScene();
+  container = createContenedor("contenedor3D");
+  camera = createCamara({ posicion: [1, 2, -3], objetivo: objetivo });
+  renderer = createRenderer({ sombra: true });
+
+  // ADDON
+  stats = createStats(container);
+  controls = createControls(camera, renderer, { objetivo: objetivo });
+
+  //CONFIG
+  config_Estilos();
+  config_Renderer(renderer, container);
+  config_Animation(renderer, animate);
+  // EVENTO
+  EventoResize(camera, renderer);
+  EventoFullScreen(renderer);
 
   //----------------------------------------------------------------//
-  //                        OBJETOS
+  //                        ESCENA 3D
+  //----------------------------------------------------------------//
+
+  World.Background(scene, 0xa0a0a0);
+  World.Niebla(scene, 0xa0a0a0, 10, 50);
+  World.Grid(scene);
+  Luces.Sol(scene, [-3, 5, -10], { generaSombra: true });
+
+  //----------------------------------------------------------------//
+  //                        GEOMETRIA
   //----------------------------------------------------------------//
 
   mesh = geometria3D(scene, { material: materiales.recibeImagen() });
@@ -47,42 +87,26 @@ function init() {
 
   geometria3D(scene, { material: materiales.Sombra(), posicion: [0, 3] });
   geometria3D(scene, { material: materiales.Sombra(), posicion: [2, 2] });
-  geometria3D(scene, { posicion: [-2, 2], color: worldColor.blue });
+  geometria3D(scene, { posicion: [-2, 2] });
+
   //----------------------------------------------------------------//
-  //                      PROPIEDADES
+  //                      Texturas
   //----------------------------------------------------------------//
 
-  // MESH
   Texturas.AddImageMap(mesh, "../../assets/2k_earth_daymap.jpg");
-  Texturas.AddImageNormalMap(
-    mesh,
-    "../assets/2k_earth_normal_map.png",
-    [20, 20],
-  );
+  Texturas.AddImageNormalMap(mesh, "../assets/2k_earth_normal_map.png");
   Texturas.AddImageAO(mesh, "../../assets/2k_earth_specular_map.png");
-
-  // NIEBLA
   Texturas.AddImageAlphaMap(niebla, "../../assets/2k_earth_cloud.jpg");
 }
 
 function animate() {
-  stats.update();
-  controls.update();
-
-  if (mesh) {
+  if (mesh && niebla) {
     mesh.rotation.y += rotacion;
-  }
-  if (niebla) {
     niebla.rotation.y += rotacion + 0.001;
   }
 
-  // Obsoleto usar settAnimationLoop fuera de esta function
-  requestAnimationFrame(animate);
-
-  //Solo 1 Valido
-  renderer.render(scene, camera);
-  //effectComposer.render(); // Usa esto si tienes post-processing
+  // Basico
+  renderer.render(scene, camera); //effectComposer.render(); // Usa esto si tienes post-processing
+  stats.update();
+  controls.update();
 }
-
-init();
-animate();

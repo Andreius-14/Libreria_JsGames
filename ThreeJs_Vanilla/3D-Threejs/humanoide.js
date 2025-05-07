@@ -12,15 +12,16 @@ import {
   createStats,
 } from "../JS-Shared/threejs/Escena.js";
 
+import { EventoFullScreen, EventoResize } from "../JS-Shared/threejs/Evento.js";
+
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 import { World } from "../JS-Shared/threejs/World.js";
 import { Model } from "../JS-Shared/threejs/model.js";
 import { Luces } from "../JS-Shared/threejs/Luces.js";
-
-import { EventoFullScreen, EventoResize } from "../JS-Shared/threejs/Evento.js";
+import { Anime } from "../JS-Shared/threejs/animate.js";
 
 let container, scene, renderer, camera, stats, controls;
-let all, model, skeleton, mixer, clock, animations;
+let model, skeleton, mixer, clock, animations;
 
 const crossFadeControls = [];
 
@@ -33,6 +34,7 @@ let sizeOfNextStep = 0;
 
 const objetivo = [0, 1, 0];
 const rutaModelo = "./3D-Threejs/Soldier/Soldier.glb";
+let group;
 
 init();
 
@@ -49,7 +51,6 @@ async function init() {
   // ADDON
   stats = createStats(container);
   controls = createControls(camera, renderer, { objetivo: objetivo });
-  clock = new THREE.Clock();
 
   // CONFIG
   config_Estilos();
@@ -64,7 +65,7 @@ async function init() {
   //                        ESCENA 3D
   //----------------------------------------------------------------//
 
-  // ESCENA I
+  // ESCENA
   World.Background(scene, 0xa0a0a0);
   World.Niebla(scene, 0xa0a0a0, 10, 50);
   World.HemisphereLight(scene, [0, 20, 0]);
@@ -74,18 +75,20 @@ async function init() {
 
   // MODELO
   [model, animations] = await Model.load(scene, rutaModelo);
+  skeleton = Model.skeletonHelper(scene, model);
   Model.enableShadows(model);
 
-  mixer = Model.mixer(model);
-  skeleton = Model.skeletonHelper(scene, model);
-  const group = Model.groupAnimation(mixer, animations); // console.log(Object.keys(group));
+  // ANIMACION
+  clock = Anime.Clock();
+  mixer = Anime.Mixer(model);
+  group = Anime.groupAnimation(mixer, animations); // console.log(Object.keys(group));
 
   idleAction = group.Idle; // mixer.clipAction(animations[0]);
   runAction = group.Run; //   mixer.clipAction(animations[3]);
   walkAction = group.Walk; // mixer.clipAction(animations[3]);
-
   actions = [idleAction, walkAction, runAction];
 
+  // RUN
   createPanel();
   activateAllActions();
 }
