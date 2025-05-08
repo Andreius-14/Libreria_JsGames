@@ -16,10 +16,9 @@ import { EventoFullScreen, EventoResize } from "../JS-Shared/threejs/Evento.js";
 
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 import { World } from "../JS-Shared/threejs/World.js";
-import { Model } from "../JS-Shared/threejs/model.js";
 import { Luces } from "../JS-Shared/threejs/Luces.js";
 import { Anime } from "../JS-Shared/threejs/animate.js";
-
+import { Model } from "../JS-Shared/threejs/Model.js";
 let container, scene, renderer, camera, stats, controls;
 let model, skeleton, mixer, clock, animations;
 
@@ -55,7 +54,6 @@ async function init() {
   // CONFIG
   config_Estilos();
   config_Renderer(renderer, container);
-  config_Animation(renderer, animate);
 
   // EVENTO
   EventoResize(camera, renderer);
@@ -91,6 +89,8 @@ async function init() {
   // RUN
   createPanel();
   activateAllActions();
+
+  config_Animation(renderer, animate);
 }
 
 function createPanel() {
@@ -388,22 +388,20 @@ function updateCrossFadeControls() {
   }
 }
 function animate() {
-  if (mixer) {
-    // 1. Obtener pesos actualizados de las acciones
-    idleWeight = idleAction.getEffectiveWeight();
-    walkWeight = walkAction.getEffectiveWeight();
-    runWeight = runAction.getEffectiveWeight();
-    // 2. Actualizar sliders y controles de crossfade
-    updateWeightSliders();
-    updateCrossFadeControls();
-    // 3. Calcular deltaTime y actualizar el mixer
-    let dt = clock.getDelta(); // mixerUpdateDelta
-    if (singleStepMode) {
-      dt = sizeOfNextStep;
-      sizeOfNextStep = 0;
-    }
-    mixer.update(dt);
+  // 1. Obtener pesos actualizados de las acciones
+  idleWeight = idleAction.getEffectiveWeight();
+  walkWeight = walkAction.getEffectiveWeight();
+  runWeight = runAction.getEffectiveWeight();
+  // 2. Actualizar sliders y controles de crossfade
+  updateWeightSliders();
+  updateCrossFadeControls();
+  // 3. Calcular deltaTime y actualizar el mixer
+  let dt = clock.getDelta(); // mixerUpdateDelta
+  if (singleStepMode) {
+    dt = sizeOfNextStep;
+    sizeOfNextStep = 0;
   }
+  mixer.update(dt);
 
   // RENDER
   renderer.render(scene, camera);

@@ -13,21 +13,20 @@ import {
   createStats,
   createControls,
 } from "../JS-Shared/threejs/Escena.js";
+import { EventoFullScreen, EventoResize } from "../JS-Shared/threejs/Evento.js";
 
 import { World } from "../JS-Shared/threejs/World.js";
 import { Luces } from "../JS-Shared/threejs/Luces.js";
-
+import { Model } from "../JS-Shared/threejs/Model.js";
+import { Anime } from "../JS-Shared/threejs/animate.js";
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
-
-import { EventoFullScreen, EventoResize } from "../JS-Shared/threejs/Evento.js";
-import { cargarModeloGlb } from "../JS-Shared/threejs/model.js";
-
 //----------------------------------------------------------------//
 //                        VARIABLES
 //----------------------------------------------------------------//
 let container, stats, clock, gui, mixer, actions, activeAction, previousAction;
 let camera, scene, renderer, model, face, controls;
 
+// Setting para GUI
 const api = { state: "Walking" };
 
 init();
@@ -43,7 +42,7 @@ async function init() {
   stats = createStats(container);
   controls = createControls(camera, renderer, { objetivo: [0, 2, 0] });
 
-  clock = new THREE.Clock(); // NUEVO
+  clock = Anime.createClock(); // NUEVO
 
   // CONFIG
   config_Estilos();
@@ -64,7 +63,7 @@ async function init() {
 
   // model - NUEVO AQUI - Modularizado Ya
   const rutaModelo = "./3D-Threejs/RobotExpressive/RobotExpressive.glb";
-  const [modelo, animaciones] = await cargarModeloGlb(scene, rutaModelo);
+  const [modelo, animaciones] = await Model.load(scene, rutaModelo);
   createGUI(modelo, animaciones);
 }
 //----------------------------------------//
@@ -94,28 +93,16 @@ function createGUI(model, animations) {
   //                        MIXER
   //----------------------------------------------------------------//
   // Instancia
-  mixer = new THREE.AnimationMixer(model);
+  mixer = Anime.createMixer(model);
+  actions = Anime.groupActionsByName(mixer, animations);
 
-  // action = {
-  //       "animacion1" : mixer.clipAction(clip),
-  //       "animacion2" : mixer.clipAction(clip),
-  //       "animacion3" : mixer.clipAction(clip),
-  //       "animacion4" : mixer.clipAction(clip),
-  //   }
-  // Recorre Animaciones
-  for (let i = 0; i < animations.length; i++) {
-    const clip = animations[i]; //--> Primera Animacion
-    const action = mixer.clipAction(clip); //--> Carga Animacion
-
-    // Rrellena el Objeto Actions
-    actions[clip.name] = action;
-
-    if (emotes.indexOf(clip.name) >= 0 || states.indexOf(clip.name) >= 4) {
-      action.clampWhenFinished = true;
-      action.loop = THREE.LoopOnce;
+  // Config Actions
+  for (const key in actions) {
+    if (emotes.indexOf(key) >= 0 || states.indexOf(key) >= 4) {
+      Anime.configAnimations(actions[key], Anime.loop.one, true);
     }
   }
-  console.log(actions);
+
   activeAction = actions["Walking"];
   activeAction.play();
 
@@ -123,9 +110,7 @@ function createGUI(model, animations) {
   //                        GUI - STATES
   //----------------------------------------------------------------//
 
-  face = model.getObjectByName("Head_4");
-
-  // GUI - Variables
+  // BASICO
   gui = new GUI();
   const statesFolder = gui.addFolder("States");
   const emoteFolder = gui.addFolder("Emotes");
@@ -135,11 +120,10 @@ function createGUI(model, animations) {
   emoteFolder.open();
   expressionFolder.open();
 
-  // De AQui en Adelante no lo entiendo
-  // GUI - Insertar Valores
+  // FOLDER 1 -- Toggle
+  //[Cambia el api.state]
   const clipCtrl = statesFolder.add(api, "state").options(states);
 
-  // Animacion - Tiempo de Demora entre cambio de animacion
   clipCtrl.onChange(function () {
     fadeToAction(api.state, 0.5);
   });
@@ -148,6 +132,13 @@ function createGUI(model, animations) {
   //                        Expressions
   //----------------------------------------------------------------//
 
+  // FOLDER 2 -- Menu Seleccionable
+  for (let i = 0; i < emotes.length; i++) {
+    createEmoteCallback(emotes[i]);
+  }
+
+  // FOLDER 3 -- Sintonizadores
+  face = model.getObjectByName("Head_4");
   const expressions = Object.keys(face.morphTargetDictionary);
 
   for (let i = 0; i < expressions.length; i++) {
@@ -157,23 +148,24 @@ function createGUI(model, animations) {
   }
 
   //----------------------------------------------------------------//
-  //                        EMOTES
+  //                    funciones Internas
   //----------------------------------------------------------------//
 
-  for (let i = 0; i < emotes.length; i++) {
-    createEmoteCallback(emotes[i]);
-  }
-
   function createEmoteCallback(name) {
+    // Genera {name:Function} en API
+    // Genera Function + Evento
     api[name] = function () {
       fadeToAction(name, 0.2);
       mixer.addEventListener("finished", restoreState);
     };
+
+    // Cada Tarjeta - Ejecuta una Funcion
     emoteFolder.add(api, name);
   }
 
+  // Ejecuta la Api.State
   function restoreState() {
-    mixer.removeEventListener("finished", restoreState);
+    mixer.removeEventListener("finished", restoreState); // Limpia el Evento
     fadeToAction(api.state, 0.2);
   }
 }
@@ -195,6 +187,7 @@ function fadeToAction(name, duration) {
     .fadeIn(duration)
     .play();
 }
+
 //----------------------------------------//
 //            Function
 //----------------------------------------//
