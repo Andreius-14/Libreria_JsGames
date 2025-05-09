@@ -9,8 +9,11 @@ import {
   createRenderer,
   createScene,
   createStats,
-} from "./Core/Escena.js";
-import { EventoFullScreen, EventoResize } from "./Evento.js";
+} from "../JS-Shared/threejs/Core/Escena.js";
+import {
+  EventoFullScreen,
+  EventoResize,
+} from "../JS-Shared/threejs/Core/Evento.js";
 
 //----------------------------------------------------------------//
 //                         INIT
