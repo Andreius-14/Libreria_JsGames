@@ -11,16 +11,18 @@ import {
   createRenderer,
   createScene,
   createStats,
-} from "../../JS-Shared/threejs/Escena.js";
+  loadCamara,
+} from "../../JS-Shared/threejs/Core/Escena.js";
 
 import {
   EventoFullScreen,
   EventoResize,
-} from "../../JS-Shared/threejs/Evento.js";
+} from "../../JS-Shared/threejs/Core/Evento.js";
 // Componentes Extra
-import { World } from "../../JS-Shared/threejs/World.js";
+import { WorldBuilder } from "../../JS-Shared/threejs/Core/World.js";
+
 import { Luces } from "../../JS-Shared/threejs/Luces.js";
-import { Mesh, geo, material } from "../../JS-Shared/threejs/Mesh.js";
+import { Mesh, geo, mat } from "../../JS-Shared/threejs/Mesh.js";
 import { Texturas } from "../../JS-Shared/threejs/Texturas.js";
 
 //----------------------------------------------------------------//
@@ -46,8 +48,9 @@ function init() {
 
   scene = createScene();
   container = createContenedor("contenedor3D");
-  camera = createCamara({ posicion: [1, 2, -3], objetivo: objetivo });
   renderer = createRenderer({ sombra: true });
+
+  camera = createCamara({ posicion: [1, 2, -3], objetivo: objetivo });
 
   // ADDON
   stats = createStats(container);
@@ -64,10 +67,13 @@ function init() {
   //                        ESCENA 3D
   //----------------------------------------------------------------//
   const color = "black";
-  World.Background(scene, color);
-  World.Niebla(scene, color, 10, 50);
-  World.Grid(scene);
-  World.Light(scene);
+
+  const World = new WorldBuilder(scene);
+
+  World.Fondo(color);
+  World.Niebla(color, 10, 50);
+  World.Grid();
+  World.Light();
   Luces.Sol(scene, [-3, 5, -10], { generaSombra: true });
 
   //----------------------------------------------------------------//
@@ -79,9 +85,9 @@ function init() {
   const rutaAO = "../../assets/2k_earth_specular_map.png";
   const rutaAM = "../../assets/2k_earth_cloud.jpg";
 
-  mesh = Mesh.create(scene, { material: material.Imagen() });
+  mesh = Mesh.create(scene, { material: mat.Imagen() });
   niebla = Mesh.create(scene, {
-    material: material.Imagen(),
+    material: mat.Imagen(),
     geo: geo.Esfera(0.71),
   });
 

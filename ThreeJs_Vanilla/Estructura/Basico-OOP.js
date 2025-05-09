@@ -6,20 +6,23 @@ import * as THREE from "three";
 // import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";                  // Cargar Archivos
 // import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";                // Optimizador de Carga
 
-
 let camera, scene, renderer;
 // let mesh;
 
 init();
 animate();
 
-function init () {
-scene = new THREE.Scene();
-camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000,);
-renderer = new THREE.WebGLRenderer({ antialias: true });
+function init() {
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    1,
+    1000,
+  );
+  renderer = new THREE.WebGLRenderer({ antialias: true });
 
-globalThis.addEventListener("resize", onWindowResize);
-
+  globalThis.addEventListener("resize", onWindowResize);
 }
 
 function onWindowResize() {
@@ -29,12 +32,12 @@ function onWindowResize() {
 }
 
 function animate() {
-	requestAnimationFrame( animate );
+  requestAnimationFrame(animate);
   //ZONA ESPECIAL [Ejecucion COnstante]
   // controls.update();
   render();
 }
 
-function render () {
-	renderer.render( scene, camera );
+function render() {
+  renderer.render(scene, camera);
 }

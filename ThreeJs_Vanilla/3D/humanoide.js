@@ -10,12 +10,16 @@ import {
   createRenderer,
   createScene,
   createStats,
-} from "../JS-Shared/threejs/Escena.js";
+} from "../JS-Shared/threejs/Core/Escena.js";
 
-import { EventoFullScreen, EventoResize } from "../JS-Shared/threejs/Evento.js";
+import {
+  EventoFullScreen,
+  EventoResize,
+} from "../JS-Shared/threejs/Core/Evento.js";
+
+import { WorldBuilder } from "../JS-Shared/threejs/Core/World.js";
 
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
-import { World } from "../JS-Shared/threejs/World.js";
 import { Luces } from "../JS-Shared/threejs/Luces.js";
 import { Anime } from "../JS-Shared/threejs/animate.js";
 import { Model } from "../JS-Shared/threejs/Model.js";
@@ -32,7 +36,7 @@ let singleStepMode = false;
 let sizeOfNextStep = 0;
 
 const objetivo = [0, 1, 0];
-const rutaModelo = "./3D-Threejs/Soldier/Soldier.glb";
+const rutaModelo = "../assets/Soldier/Soldier.glb";
 let group;
 
 init();
@@ -64,11 +68,13 @@ async function init() {
   //----------------------------------------------------------------//
 
   // ESCENA
-  World.Background(scene, 0xa0a0a0);
-  World.Niebla(scene, 0xa0a0a0, 10, 50);
-  World.HemisphereLight(scene, [0, 20, 0]);
-  World.Floor(scene, 0xcbcbcb, 100, { recibeSombra: true });
-  World.Grid(scene);
+  const World = new WorldBuilder(scene);
+  World.Background(0xa0a0a0);
+  World.Niebla(0xa0a0a0, 10, 50);
+  World.HemisphereLight([0, 20, 0]);
+  World.Floor(0xcbcbcb, 100, { recibeSombra: true });
+  World.Grid();
+
   Luces.Sol(scene, [-3, 5, -10], { generaSombra: true });
 
   // MODELO
