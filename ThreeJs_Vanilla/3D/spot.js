@@ -1,8 +1,7 @@
 import * as THREE from "three";
 import TWEEN from "three/addons/libs/tween.module.js";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-import { create, config } from "../JS-Shared/threejs/Core/Escena.js";
+import { create, config, extra } from "../JS-Shared/threejs/Core/Escena.js";
 import { Mesh, geo, mat } from "../JS-Shared/threejs/Mesh.js";
 import {
   EventoFullScreen,
@@ -19,20 +18,17 @@ const container = create.contenedor("contenedor");
 const scene = create.scene();
 const renderer = create.renderer();
 const camera = create.camera(35, 0.1, 100);
-
-// ADDON
 const controls = create.controls(camera, renderer);
 
 // CONFIG
 config.Estilos();
 config.Renderer(renderer, container);
 config.Animation(renderer, animate);
-config.Controls(controls, {
-  min: 1,
-  max: 10,
-  objetivo: [0, 0.5, 0],
-  atraviesaSuelo: false,
-});
+config.Controls(controls);
+
+// EXTRA
+extra.Controls(controls, { min: 1, max: 10 });
+extra.Renderer(renderer, { sombra: true });
 
 // EVENTO
 EventoResize(camera, renderer);

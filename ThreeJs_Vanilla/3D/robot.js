@@ -2,21 +2,14 @@
 //                        Import
 //----------------------------------------------------------------//
 import * as THREE from "three";
+import { create, config, extra } from "../JS-Shared/threejs/Core/Escena.js";
 import {
-  createScene,
-  createRenderer,
-  createContenedor,
-  createCamara,
-  config_Estilos,
-  config_Renderer,
-  config_Animation,
-  createStats,
-  createControls,
-} from "../JS-Shared/threejs/Escena.js";
-import { EventoFullScreen, EventoResize } from "../JS-Shared/threejs/Evento.js";
+  EventoResize,
+  EventoFullScreen,
+} from "../JS-Shared/threejs/Core/Evento.js";
+import { WorldBuilder } from "../JS-Shared/threejs/Core/World.js";
+import { LightBuilder } from "../JS-Shared/threejs/Luces.js";
 
-import { World } from "../JS-Shared/threejs/World.js";
-import { Luces } from "../JS-Shared/threejs/Luces.js";
 import { Model } from "../JS-Shared/threejs/Model.js";
 import { Anime } from "../JS-Shared/threejs/animate.js";
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
@@ -33,36 +26,40 @@ init();
 
 async function init() {
   // CORE
-  container = createContenedor("Contenedor");
-  camera = createCamara();
-  scene = createScene();
-  renderer = createRenderer();
-
-  // ADDON
-  stats = createStats(container);
-  controls = createControls(camera, renderer, { objetivo: [0, 2, 0] });
-
+  container = create.contenedor("Contenedor");
+  camera = create.camera();
+  scene = create.scene();
+  renderer = create.renderer();
+  stats = create.stats(container);
+  controls = create.controls(camera, renderer);
   clock = Anime.createClock(); // NUEVO
 
   // CONFIG
-  config_Estilos();
-  config_Renderer(renderer, container);
-  config_Animation(renderer, animate);
+  config.Estilos();
+  config.Controls(controls);
+  config.Renderer(renderer, container);
+  config.Animation(renderer, animate);
+
+  extra.Controls(controls, { min: 5, max: 30, objetivo: [0, 2, 0] });
 
   // EVENTO
   EventoResize(camera, renderer);
   EventoFullScreen(renderer);
 
   // ESCENA
-  World.Background(scene, 0xe0e0e0);
-  World.Niebla(scene, 0xe0e0e0, 20, 100);
-  World.HemisphereLight(scene);
-  World.Floor(scene, 0xcbcbcb, 2000);
-  World.Grid(scene, 200, 40);
-  Luces.Direccional(scene, [0, 20, 10]);
+  const World = new WorldBuilder(scene);
+  const Luces = new LightBuilder(scene);
+
+  World.Background();
+  World.Niebla(20, 100);
+  World.HemisphereLight();
+  World.Floor(0xcbcbcb, 2000);
+  World.Grid(200, 40);
+
+  Luces.Sol({ position: [0, 20, 10] });
 
   // model - NUEVO AQUI - Modularizado Ya
-  const rutaModelo = "./3D-Threejs/RobotExpressive/RobotExpressive.glb";
+  const rutaModelo = "../assets/RobotExpressive/RobotExpressive.glb";
   const [modelo, animaciones] = await Model.load(scene, rutaModelo);
   createGUI(modelo, animaciones);
 }

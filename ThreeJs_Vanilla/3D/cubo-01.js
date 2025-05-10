@@ -1,61 +1,90 @@
-// Basico
-import { scene, camera, renderer } from "../JS-Shared/threejs_Escena_I.js";
-import { stats, controls } from "../JS-Shared/threejs_Escena_II.js";
+import * as THREE from "three";
+import { create, config, extra } from "../JS-Shared/threejs/Core/Escena.js";
+import { evento } from "../JS-Shared/threejs/Core/Evento.js";
 
-// Complementos
-import { World } from "../JS-Shared/threejs_world.js";
-import { Luces } from "../JS-Shared/threejs_luces.js";
+import { Mesh, geo, mat } from "../JS-Shared/threejs/Mesh.js";
+import { WorldBuilder } from "../JS-Shared/threejs/Core/World.js";
+import { LightBuilder } from "../JS-Shared/threejs/Luces.js";
 
-import { geometria3D, geo, materiales } from "../JS-Shared/threejs_texturas.js";
+// VARIABLES
+let container, camera, scene, renderer, stats, controls;
+let grupo, cubo, plano, mesh;
 
-import { worldColor } from "../JS-Shared/Shared-Const.js";
-
-init();
-animate();
-
-// CONSTANTES
-//const group = new THREE.Group();
-
-//FUNCIONES
 function init() {
-  // PROPIEDADES
-  // scene.background = new THREE.Color( worldcolor.grey );
+  //----------------------------------------------------------------//
+  //                        CORE
+  //----------------------------------------------------------------//
 
-  geometria3D();
-  //geometria3D(geo.cubo);
-  //geometria3D(geo.Capsula, undefined, [3, 3, 1]);
-  World.Background();
-  World.Floor();
+  //CORE
+  container = create.contenedor();
+  camera = create.camera();
+  scene = create.scene();
+  renderer = create.renderer();
+  stats = create.stats(container);
+  controls = create.controls(camera, renderer);
+
+  // CONFIG
+  config.Estilos();
+  config.Controls(controls);
+  config.Renderer(renderer, container);
+  config.Animation(renderer, animate);
+
+  extra.Controls(controls, { min: 5, max: 50 });
+  extra.Renderer(renderer);
+
+  // EVENTOS
+  evento.Resize(camera, renderer);
+  evento.FullScreen(renderer);
+
+  //----------------------------------------------------------------//
+  //                        ESCENA 3D
+  //----------------------------------------------------------------//
+
+  const World = new WorldBuilder(scene, "cyan");
+  const Luces = new LightBuilder(scene);
+
   World.Grid();
   World.Axis();
+  World.Bg();
+  World.Fog();
+  // World.Light();
+  World.Floor("white");
 
-  // INSERCION LUCES
-  //scene.add(light, helper);
-  //
-  // INSERCION GEOMEATRIA [Se puede Agrupar]
+  Luces.Sol({ ayuda: true });
 
-  Luces.Direccional(worldColor.gray, 1, [-2, 2, 0], [0, 0, 0], true);
-  //scene.add(group);
+  //----------------------------------------------------------------//
+  //                        ELEMENTOS
+  //----------------------------------------------------------------//
+  grupo = new THREE.Group();
+  // geometria3D();
+  mesh = Mesh.simple(geo.Cubo(1), mat.Sombra(), "red");
+  cubo = Mesh.create(scene, { geo: geo.Cubo(), posicion: [2, 2, 2] });
+  plano = Mesh.create(scene, { geo: geo.Plano(), posicion: [-2, 2, 2] });
+  grupo.add(plano);
+  grupo.add(mesh);
+  grupo.add(cubo);
+
+  scene.add(grupo);
 }
 
 // 🌱 Render [Especial se ejecuta continuamente]
 function animate() {
-  requestAnimationFrame(animate);
   // mesh.rotation.x += 0.01;
   // mesh.rotation.y += 0.01;
 
-  //group.children.forEach((objeto, indice) => {
-  //  // Realiza alguna acción en cada objeto
-  //  let i = indice + 1;
-  //  objeto.rotation.x += i * 0.01;
-  //  objeto.rotation.y += i * 0.01;
-  //});
-  //
+  grupo.children.forEach((objeto, indice) => {
+    // Realiza alguna acción en cada objeto
+    let i = indice + 1;
+    objeto.rotation.x += i * 0.01;
+    objeto.rotation.y += i * 0.01;
+  });
+
   stats.update();
   controls.update();
   renderer.render(scene, camera);
 }
 
+init();
 // 🌱 En cubo-01 la camara se desplaza en PLANO CARTESIOANO
 // 🌱 En load-Completo rota sobre el objeto 3d
 

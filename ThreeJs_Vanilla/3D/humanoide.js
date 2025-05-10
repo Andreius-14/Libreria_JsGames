@@ -1,16 +1,6 @@
 import * as THREE from "three";
 
-import {
-  config_Animation,
-  config_Estilos,
-  config_Renderer,
-  createCamara,
-  createContenedor,
-  createControls,
-  createRenderer,
-  createScene,
-  createStats,
-} from "../JS-Shared/threejs/Core/Escena.js";
+import { create, config, extra } from "../JS-Shared/threejs/Core/Escena.js";
 
 import {
   EventoFullScreen,
@@ -18,11 +8,12 @@ import {
 } from "../JS-Shared/threejs/Core/Evento.js";
 
 import { WorldBuilder } from "../JS-Shared/threejs/Core/World.js";
+import { LightBuilder } from "../JS-Shared/threejs/Luces.js";
 
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
-import { Luces } from "../JS-Shared/threejs/Luces.js";
 import { Anime } from "../JS-Shared/threejs/animate.js";
 import { Model } from "../JS-Shared/threejs/Model.js";
+
 let container, scene, renderer, camera, stats, controls;
 let model, skeleton, mixer, clock, animations;
 
@@ -46,18 +37,21 @@ async function init() {
   //                        CORE
   //----------------------------------------------------------------//
 
-  container = createContenedor("contenedor3D");
-  camera = createCamara({ posicion: [1, 2, -3], objetivo: objetivo });
-  scene = createScene();
-  renderer = createRenderer({ sombra: true });
+  container = create.contenedor("contenedor3D");
+  camera = create.camera({ posicion: [1, 2, -3], objetivo: objetivo });
+  scene = create.scene();
+  renderer = create.renderer();
 
-  // ADDON
-  stats = createStats(container);
-  controls = createControls(camera, renderer, { objetivo: objetivo });
+  stats = create.stats(container);
+  controls = create.controls(camera, renderer);
 
   // CONFIG
-  config_Estilos();
-  config_Renderer(renderer, container);
+  config.Estilos();
+  config.Controls(controls);
+  config.Renderer(renderer, container);
+  // EXTRA
+  extra.Controls(controls, { objetivo: objetivo });
+  extra.Renderer(renderer, { sombra: true });
 
   // EVENTO
   EventoResize(camera, renderer);
@@ -69,13 +63,15 @@ async function init() {
 
   // ESCENA
   const World = new WorldBuilder(scene);
-  World.Background(0xa0a0a0);
-  World.Niebla(0xa0a0a0, 10, 50);
+  const Luces = new LightBuilder(scene);
+
+  World.Background();
+  World.Niebla(10, 50);
   World.HemisphereLight([0, 20, 0]);
-  World.Floor(0xcbcbcb, 100, { recibeSombra: true });
+  World.Floor(0xcbcbcb, 100, true);
   World.Grid();
 
-  Luces.Sol(scene, [-3, 5, -10], { generaSombra: true });
+  Luces.Sol({ position: [-3, 5, -10], generaSombra: true });
 
   // MODELO
   [model, animations] = await Model.load(scene, rutaModelo);
@@ -96,7 +92,7 @@ async function init() {
   createPanel();
   activateAllActions();
 
-  config_Animation(renderer, animate);
+  config.Animation(renderer, animate);
 }
 
 function createPanel() {

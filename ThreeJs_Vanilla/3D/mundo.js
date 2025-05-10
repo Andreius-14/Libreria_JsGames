@@ -1,29 +1,18 @@
 /* eslint-disable no-unused-vars */
 //import * as THREE from "three";
 
-import {
-  config_Animation,
-  config_Estilos,
-  config_Renderer,
-  createCamara,
-  createContenedor,
-  createControls,
-  createRenderer,
-  createScene,
-  createStats,
-  loadCamara,
-} from "../../JS-Shared/threejs/Core/Escena.js";
+import { create, config, extra } from "../JS-Shared/threejs/Core/Escena.js";
 
 import {
   EventoFullScreen,
   EventoResize,
-} from "../../JS-Shared/threejs/Core/Evento.js";
+} from "../JS-Shared/threejs/Core/Evento.js";
 // Componentes Extra
-import { WorldBuilder } from "../../JS-Shared/threejs/Core/World.js";
+import { WorldBuilder } from "../JS-Shared/threejs/Core/World.js";
+import { LightBuilder } from "../JS-Shared/threejs/Luces.js";
 
-import { Luces } from "../../JS-Shared/threejs/Luces.js";
-import { Mesh, geo, mat } from "../../JS-Shared/threejs/Mesh.js";
-import { Texturas } from "../../JS-Shared/threejs/Texturas.js";
+import { Mesh, geo, mat } from "../JS-Shared/threejs/Mesh.js";
+import { Texturas } from "../JS-Shared/threejs/Texturas.js";
 
 //----------------------------------------------------------------//
 //                        VARIABLES
@@ -45,36 +34,40 @@ function init() {
   //----------------------------------------------------------------//
   //                        CORE
   //----------------------------------------------------------------//
+  // CORE
+  container = create.contenedor("Contenedor");
+  camera = create.camera({ posicion: [1, 2, -3], objetivo: objetivo });
+  scene = create.scene();
+  renderer = create.renderer();
+  stats = create.stats(container);
+  controls = create.controls(camera, renderer);
 
-  scene = createScene();
-  container = createContenedor("contenedor3D");
-  renderer = createRenderer({ sombra: true });
+  // CONFIG
+  config.Estilos();
+  config.Controls(controls);
+  config.Renderer(renderer, container);
+  config.Animation(renderer, animate);
 
-  camera = createCamara({ posicion: [1, 2, -3], objetivo: objetivo });
-
-  // ADDON
-  stats = createStats(container);
-  controls = createControls(camera, renderer, { objetivo: objetivo });
-
-  //CONFIG
-  config_Estilos();
-  config_Renderer(renderer, container);
+  extra.Controls(controls, { min: 5, max: 30, objetivo: objetivo });
+  extra.Renderer(renderer);
   // EVENTO
   EventoResize(camera, renderer);
   EventoFullScreen(renderer);
 
+  //
   //----------------------------------------------------------------//
   //                        ESCENA 3D
   //----------------------------------------------------------------//
   const color = "black";
 
-  const World = new WorldBuilder(scene);
+  const World = new WorldBuilder(scene, color);
+  const Luces = new LightBuilder(scene);
 
-  World.Fondo(color);
-  World.Niebla(color, 10, 50);
+  World.Fondo();
+  World.Niebla(10, 50);
   World.Grid();
   World.Light();
-  Luces.Sol(scene, [-3, 5, -10], { generaSombra: true });
+  Luces.Sol({ position: [-3, 5, -10] });
 
   //----------------------------------------------------------------//
   //                        GEOMETRIA - INICIO
@@ -102,13 +95,11 @@ function init() {
   //----------------------------------------------------------------//
   //                        GEOMETRIA - FIN
   //----------------------------------------------------------------//
-
-  config_Animation(renderer, animate);
 }
 
 function animate() {
   mesh.rotation.y += rotacion;
-  niebla.rotation.y += rotacion + 0.001;
+  niebla.rotation.y += rotacion + 0.002;
 
   // Basico
   renderer.render(scene, camera); //effectComposer.render(); // Usa esto si tienes post-processing
