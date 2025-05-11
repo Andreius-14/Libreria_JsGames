@@ -2,12 +2,9 @@ import * as THREE from "three";
 import TWEEN from "three/addons/libs/tween.module.js";
 
 import { create, config, extra } from "../JS-Shared/threejs/Core/Escena.js";
-import { Mesh, geo, mat } from "../JS-Shared/threejs/Mesh.js";
-import {
-  EventoFullScreen,
-  EventoResize,
-} from "../JS-Shared/threejs/Core/Evento.js";
+import { evento } from "../JS-Shared/threejs/Core/Evento.js";
 
+import { Mesh, geo, mat } from "../JS-Shared/threejs/Mesh.js";
 import { WorldBuilder } from "../JS-Shared/threejs/Core/World.js";
 
 //----------------------------------------------------------------//
@@ -31,8 +28,8 @@ extra.Controls(controls, { min: 1, max: 10 });
 extra.Renderer(renderer, { sombra: true });
 
 // EVENTO
-EventoResize(camera, renderer);
-EventoFullScreen(renderer);
+evento.Resize(camera, renderer);
+evento.FullScreen(renderer);
 
 //----------------------------------------------------------------//
 //                        ESCENA 3D

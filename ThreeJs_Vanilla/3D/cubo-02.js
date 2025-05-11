@@ -1,69 +1,76 @@
 import * as THREE from "three";
+import { create, config, extra } from "../JS-Shared/threejs/Core/Escena.js";
+import { evento } from "../JS-Shared/threejs/Core/Evento.js";
 
-// Basico
-import { scene, camera, renderer } from "../JS-Shared/threejs_Escena_I.js";
-import { stats, controls } from "../JS-Shared/threejs_Escena_II.js";
-import { World } from "../JS-Shared/threejs_world.js";
-import {
-  geometria3D,
-  geo,
-  materiales,
-  AddImagenMap,
-  textureLoad,
-} from "../JS-Shared/threejs_texturas.js";
-// import { OrbitControls } from "three/addons/controls/OrbitControls.js"; // cuando se aplica la camara siempre apuntara a 0,0,0
-// Campos - Instancias
-// let camera, scene, renderer; //Si solo fuera esta linea y no 3 seria bueno
-// let controls;
+import { Mesh, geo, mat } from "../JS-Shared/threejs/Mesh.js";
+import { WorldBuilder } from "../JS-Shared/threejs/Core/World.js";
+import { LightBuilder } from "../JS-Shared/threejs/Luces.js";
+
+import { Texturas } from "../JS-Shared/threejs/Texturas.js";
+
+let container, camera, scene, renderer, stats, controls;
+
 let mesh;
 let prueba;
+let rutaPared = "../assets/lado.gif";
+//----------------------------------------------------------------//
+//                        CORE
+//----------------------------------------------------------------//
+
+//CORE
+container = create.contenedor();
+camera = create.camera();
+scene = create.scene();
+renderer = create.renderer();
+stats = create.stats(container);
+controls = create.controls(camera, renderer);
+
+// CONFIG
+config.Estilos();
+config.Controls(controls);
+config.Renderer(renderer, container);
+config.Animation(renderer, animate);
+
+extra.Controls(controls, { min: 5, max: 55 });
+extra.Renderer(renderer);
+
+// EVENTOS
+evento.Resize(camera, renderer);
+evento.FullScreen(renderer);
+
 // Funciones
 function init() {
-  const rutaPared = "../assets/lado.gif";
-  // Instancia e Propiedades
-  // scene = new THREE.Scene();
-  // camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 1000,);
-  // renderer = new THREE.WebGLRenderer({ antialias: true });
-  World.Light();
+  //----------------------------------------------------------------//
+  //                        ESCENA 3D
+  //----------------------------------------------------------------//
 
-  // GEOMETRIA NUEVA - CUBO [Inicio]
-  const texture = textureLoad(rutaPared);
-  texture.colorSpace = THREE.SRGBColorSpace;
+  const World = new WorldBuilder(scene);
+  const Luces = new LightBuilder(scene);
 
-  prueba = geometria3D({
-    geometria: geo.Cubo(),
+  World.Grid();
+  World.Axis();
+  World.Bg();
+  World.Fog();
+  // World.Light();
+  World.Floor("white");
+
+  Luces.Sol({ ayuda: true });
+
+  prueba = Mesh.create(scene, {
+    geo: geo.Cubo(),
     posicion: [2, 2, 0],
-    material: materiales.color(),
+    material: mat.Color(),
   });
-  mesh = geometria3D({
-    geometria: geo.Cubo(),
-    material: materiales.color(),
+  mesh = Mesh.create(scene, {
+    geo: geo.Cubo(),
+    material: mat.Color(),
   });
 
-  AddImagenMap(prueba, rutaPared);
-  AddImagenMap(mesh, rutaPared);
-
-  //const geometry = new THREE.BoxGeometry(1, 1, 1);
-  //const material = new THREE.MeshBasicMaterial({ map: texture });
-  ////({ color: 0x44aa88 }) ({ map: texture })
-  //
-
-  // GEOMETRIA NUEVA - CUBO [Final]
-
-  // controls = new OrbitControls(camera, renderer.domElement);
-  // // controls.target.set(0, 0.5, 0);
-  // controls.enablePan = false;   // Desplazar X,Y de Camara
-  // controls.enableDamping = true;
-  // controls.autoRotate = true;
-  // controls.update();
-
-  //scene.add(mesh);
-  // INSERCION
-  // document.body.appendChild(renderer.domElement);
+  Texturas.base(prueba, rutaPared);
+  Texturas.base(mesh, rutaPared);
 }
 
 function animate() {
-  requestAnimationFrame(animate);
   mesh.rotation.x += 0.005;
   mesh.rotation.y += 0.01;
 
@@ -74,6 +81,5 @@ function animate() {
 }
 
 init();
-animate();
 
 // 🌱 La funcion animate es Especial - Se ejecuta de Manera Continua FPS

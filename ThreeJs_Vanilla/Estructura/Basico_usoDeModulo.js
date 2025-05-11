@@ -1,9 +1,5 @@
-import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-
 import { create, config, extra } from "../JS-Shared/threejs/Core/Escena.js";
 import { evento } from "../JS-Shared/threejs/Core/Evento.js";
-import { WorldBuilder } from "../JS-Shared/threejs/Core/World.js";
 //----------------------------------------------------------------//
 //                        CORE
 //----------------------------------------------------------------//
@@ -11,7 +7,7 @@ import { WorldBuilder } from "../JS-Shared/threejs/Core/World.js";
 const container = create.contenedor("contenedor");
 const scene = create.scene();
 const renderer = create.renderer();
-const camera = create.camera();
+const camera = create.camera(35, 0.1, 100);
 const controls = create.controls(camera, renderer);
 const stats = create.stats(container);
 // CONFIG
@@ -20,35 +16,12 @@ config.Renderer(renderer, container);
 config.Animation(renderer, animate);
 config.Controls(controls);
 
-// EXTRA
-extra.Controls(controls, { max: 50 });
-
 // EVENTO
 evento.Resize(camera, renderer);
 evento.FullScreen(renderer);
-
 //----------------------------------------------------------------//
-//                          ELEMENTOS
+//                        Animacion
 //----------------------------------------------------------------//
-// 🌱 GEOMETRIA NUEVA -- Load
-let World = new WorldBuilder(scene);
-
-World.Bg();
-World.Grid();
-World.Axis();
-
-//----------------------------------------------------------------//
-//                           MODELO
-//----------------------------------------------------------------//
-let mesh = null;
-
-const loader = new GLTFLoader();
-loader.load("../assets/scene.gltf", (gltf) => {
-  mesh = gltf.scene;
-  scene.add(mesh);
-});
-
-// 🌱 Render
 function animate() {
   if (mesh) {
     mesh.rotation.x += 0.01;
