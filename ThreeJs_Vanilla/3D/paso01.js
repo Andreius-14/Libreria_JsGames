@@ -32,16 +32,22 @@ evento.FullScreen(renderer);
 //                          ELEMENTOS
 //----------------------------------------------------------------//
 
-const World = new WorldBuilder(scene, "Black");
+const World = new WorldBuilder(scene);
 const Luces = new LightBuilder(scene);
 
-// World.Floor();
+World.Bg();
 World.Niebla();
-World.Background();
+//Help
 World.Grid();
 World.Axis();
+//Light
+World.SkyPiso();
+// World.Light();
 
-// Luces.Sol({ position: [1, 3, 2], ayuda: true });
+//Element
+World.Floor();
+
+Luces.Sol();
 
 //----------------------------------------------------------------//
 //                          ESCENA
@@ -95,6 +101,11 @@ function animate() {
   if (group) {
     group.rotation.x += 0.01;
     group.rotation.y += 0.05;
+  }
+
+  if (cubes) {
+    cubes.rotation.x += 0.05;
+    cubes.rotation.y += 0.01;
   }
   renderer.render(scene, camera);
 

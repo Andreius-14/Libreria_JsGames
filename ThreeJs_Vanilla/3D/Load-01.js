@@ -4,6 +4,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { create, config, extra } from "../JS-Shared/threejs/Core/Escena.js";
 import { evento } from "../JS-Shared/threejs/Core/Evento.js";
 import { WorldBuilder } from "../JS-Shared/threejs/Core/World.js";
+import { LightBuilder } from "../JS-Shared/threejs/Luces.js";
 //----------------------------------------------------------------//
 //                        CORE
 //----------------------------------------------------------------//
@@ -32,11 +33,14 @@ evento.FullScreen(renderer);
 //----------------------------------------------------------------//
 // 🌱 GEOMETRIA NUEVA -- Load
 let World = new WorldBuilder(scene);
-
+let Luces = new LightBuilder(scene);
 World.Bg();
 World.Grid();
 World.Axis();
+World.SkyPiso();
+World.Floor();
 
+Luces.Sol();
 //----------------------------------------------------------------//
 //                           MODELO
 //----------------------------------------------------------------//

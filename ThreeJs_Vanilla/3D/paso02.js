@@ -1,37 +1,56 @@
 import * as THREE from "three";
+import { create, config, extra } from "../JS-Shared/threejs/Core/Escena.js";
+import { evento } from "../JS-Shared/threejs/Core/Evento.js";
 
-import { camera, renderer, scene } from "../JS-Shared/threejs_Escena_I.js";
-import { controls, stats } from "../JS-Shared/threejs_Escena_II.js";
-import { World } from "../JS-Shared/threejs_world.js";
-import { worldColor } from "../JS-Shared/Shared-Const.js";
-//-------- ----------
-// SCENE, CAMERA, RENDERER
-//-------- ----------
-// const scene = new THREE.Scene();
-// scene.add(new THREE.GridHelper(10, 10));
-// const camera = new THREE.PerspectiveCamera(50, 4 / 3, 0.1, 1000);
-// const renderer = new THREE.WebGL1Renderer();
-// renderer.setSize(640, 480, false);
-// ( document.getElementById('demo') || document.body ).appendChild(renderer.domElement);
-//-------- ----------
-// CREATING A GROUP
-//-------- ----------
+import { WorldBuilder } from "../JS-Shared/threejs/Core/World.js";
+import { LightBuilder } from "../JS-Shared/threejs/Luces.js";
+import { colorCss } from "../JS-Shared/Shared-Const.js";
+
+//----------------------------------------------------------------//
+//                        CORE
+//----------------------------------------------------------------//
+//CORE
+const container = create.contenedor("contenedor");
+const scene = create.scene();
+const renderer = create.renderer();
+const camera = create.camera();
+const controls = create.controls(camera, renderer);
+const stats = create.stats(container);
+// CONFIG
+config.Estilos();
+config.Renderer(renderer, container);
+config.Animation(renderer, animate);
+config.Controls(controls);
+
+// EXTRA
+extra.Controls(controls);
+
+// EVENTO
+evento.Resize(camera, renderer);
+evento.FullScreen(renderer);
+
 const group = new THREE.Group(),
   radius = 2,
   count = 8;
 let i = 0;
 
-camera.position.set(8, 8, 8);
-camera.lookAt(0, 0, 0);
-
 function init() {
   // INSERCION WORLD
+  const World = new WorldBuilder(scene);
+  const Luces = new LightBuilder(scene);
 
-  World.Floor();
+  World.Bg();
   World.Niebla();
+  //Help
   World.Grid();
   World.Axis();
-  World.Light();
+  // Light
+  World.SkyPiso();
+  // World.Light();
+  //Element
+  World.Floor(colorCss.neutroGrey, 200);
+
+  Luces.Sol(); // [5,5,5]
 
   while (i < count) {
     // creating a mesh
@@ -56,7 +75,6 @@ function init() {
   //-------- ----------
 }
 function animate() {
-  requestAnimationFrame(animate);
   stats.update();
   controls.update();
   renderer.render(scene, camera);

@@ -66,6 +66,7 @@ function init() {
   World.Fondo();
   World.Niebla(10, 50);
   World.Grid();
+  // World.SkyPiso();
   World.Light();
   Luces.Sol({ position: [-3, 5, -10] });
 

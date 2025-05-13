@@ -5,7 +5,7 @@ import { evento } from "../JS-Shared/threejs/Core/Evento.js";
 import { Mesh, geo, mat } from "../JS-Shared/threejs/Mesh.js";
 import { WorldBuilder } from "../JS-Shared/threejs/Core/World.js";
 import { LightBuilder } from "../JS-Shared/threejs/Luces.js";
-import { color } from "../JS-Shared/Shared-Const.js";
+import { colorCss } from "../JS-Shared/Shared-Const.js";
 import GUI from "lil-gui";
 
 // import { worldColor } from "../JS-Shared/Shared-Const.js";
@@ -48,7 +48,7 @@ function init() {
   World.Background();
   World.Grid();
   World.Axis();
-  World.Floor(color.dark_gray, 100, true);
+  World.Floor(colorCss.dark_gray, 100, true);
   World.Niebla();
   World.Light();
 
