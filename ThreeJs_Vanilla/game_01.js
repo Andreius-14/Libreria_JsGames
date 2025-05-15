@@ -12,21 +12,20 @@ const objects = []; // Array para almacenar objetos con los que se puede colisio
 
 let raycaster; // Raycaster para detectar colisiones
 
-// Variables de control de movimiento
+// control de movimiento
 let moveForward = false;
 let moveBackward = false;
 let moveLeft = false;
 let moveRight = false;
-let canJump = false; // Indica si el jugador puede saltar
+let canJump = false;
 
-// Variables para el cálculo de física
-let prevTime = performance.now(); // Para calcular el tiempo entre frames
+// cálculo de física
 const velocity = new THREE.Vector3(); // Velocidad actual del jugador
 const direction = new THREE.Vector3(); // Dirección del movimiento
-const vertex = new THREE.Vector3(); // Variable temporal para manipular vértices
-const color = new THREE.Color(); // Variable temporal para manipular colores
+// const vertex = new THREE.Vector3(); // Variable temporal para manipular vértices
+// const color = new THREE.Color(); // Variable temporal para manipular colores
 
-let controls; // Controles de movimiento en primera persona
+let controls;
 
 //----------------------------------------------------------------//
 //                        CONFIGURACIÓN INICIAL
@@ -35,7 +34,10 @@ let controls; // Controles de movimiento en primera persona
 const camera = create.camera({ pov: 75, near: 1, far: 1000 });
 const scene = create.scene();
 const renderer = create.renderer();
+const stats = create.stats(document.body);
 
+const clock = new THREE.Clock();
+let dt = 0;
 // Configuración inicial
 config.Estilos(); // Aplica estilos CSS necesarios
 config.Renderer(renderer, document.body); // Configura el renderer en el documento
@@ -70,8 +72,8 @@ function init() {
   //----------------------------------------------------------------//
   controls = new PointerLockControls(camera, document.body);
 
-  // Evento para iniciar los controles al hacer click en las instrucciones
   instructions.addEventListener("click", function () {
+    // Activa el evento LOCK
     controls.lock();
   });
 
@@ -81,8 +83,15 @@ function init() {
     blocker.style.display = "none";
   });
 
-  // Evento cuando se desactiva el pointer lock
+  // ===> Evento cuando se desactiva el pointer lock  <===
   controls.addEventListener("unlock", function () {
+    // cuando:
+    // El usuario presiona ESC
+    // Cambia a otra pestaña/aplicación
+    // El navegador pierde el focus
+
+    // Ocurre algún error en el pointer lock
+
     blocker.style.display = "block";
     instructions.style.display = "";
   });
@@ -117,7 +126,7 @@ function init() {
 
       case "Space": // Barra espaciadora - saltar
         if (canJump === true) velocity.y += 350; // Aplica fuerza de salto
-        // canJump = false; // Evita saltos múltiples
+        canJump = false; // Evita saltos múltiples
         break;
     }
   };
@@ -163,161 +172,82 @@ function init() {
   //----------------------------------------------------------------//
   //                          CREACIÓN DEL PISO
   //----------------------------------------------------------------//
-  let position;
+
   World.Floor(undefined, 2000);
-  // let floorGeometry = new THREE.PlaneGeometry(2000, 2000, 100, 100);
-  // floorGeometry.rotateX(-Math.PI / 2); // Rota el plano para que sea horizontal
-  //
-  // // Modifica los vértices del piso para crear variación
-  // let position = floorGeometry.attributes.position;
-  //
-  // for (let i = 0, l = position.count; i < l; i++) {
-  //   vertex.fromBufferAttribute(position, i);
-  //   // Aplica desplazamiento aleatorio a cada vértice
-  //   vertex.x += Math.random() * 20 - 10;
-  //   vertex.y += Math.random() * 2;
-  //   vertex.z += Math.random() * 20 - 10;
-  //   position.setXYZ(i, vertex.x, vertex.y, vertex.z);
-  // }
-  //
-  // // Convierte la geometría a non-indexed para tener vértices únicos
-  // floorGeometry = floorGeometry.toNonIndexed();
-  //
-  // // Asigna colores aleatorios a cada vértice del piso
-  // position = floorGeometry.attributes.position;
-  // const colorsFloor = [];
-  //
-  // for (let i = 0, l = position.count; i < l; i++) {
-  //   color.setHSL(
-  //     Math.random() * 0.3 + 0.5, // Tono
-  //     0.75, // Saturación
-  //     Math.random() * 0.25 + 0.75, // Luminosidad
-  //     THREE.SRGBColorSpace,
-  //   );
-  //   colorsFloor.push(color.r, color.g, color.b);
-  // }
-  //
-  // // Añade los colores como atributo de la geometría
-  // floorGeometry.setAttribute(
-  //   "color",
-  //   new THREE.Float32BufferAttribute(colorsFloor, 3),
-  // );
-  //
-  // // Crea el mesh del piso con colores por vértice
-  // const floor = new THREE.Mesh(
-  //   floorGeometry,
-  //   new THREE.MeshBasicMaterial({ vertexColors: true }),
-  // );
-  // scene.add(floor);
-  //
+  let position;
+
   //----------------------------------------------------------------//
   //                          CREACIÓN DE OBJETOS (CAJAS)
   //----------------------------------------------------------------//
-  const boxGeometry = new THREE.BoxGeometry(20, 20, 20).toNonIndexed();
+  // 1. Crear geometría de caja
+  const boxG = new THREE.BoxGeometry(20, 20, 20);
+  position = boxG.attributes.position; // Declaramos position aquí
 
-  // Asigna colores aleatorios a cada vértice de las cajas
-  position = boxGeometry.attributes.position;
-  const colorsBox = [];
+  const boxM = new THREE.MeshBasicMaterial({
+    color: 0x000000,
+  });
 
-  for (let i = 0, l = position.count; i < l; i++) {
-    color.setHSL(
-      Math.random() * 0.3 + 0.5,
-      0.75,
-      Math.random() * 0.25 + 0.75,
-      THREE.SRGBColorSpace,
-    );
-    colorsBox.push(color.r, color.g, color.b);
-  }
-
-  boxGeometry.setAttribute(
-    "color",
-    new THREE.Float32BufferAttribute(colorsBox, 3),
-  );
-
-  // Crea 500 cajas en posiciones aleatorias
+  // 3. Crear y posicionar 500 cajas
   for (let i = 0; i < 500; i++) {
-    const boxMaterial = new THREE.MeshPhongMaterial({
-      specular: 0xffffff, // Brillo especular
-      flatShading: true, // Sombreado plano
-      vertexColors: true, // Usa colores por vértice
-    });
+    const box = new THREE.Mesh(boxG, boxM);
 
-    // Color base aleatorio para la caja
-    boxMaterial.color.setHSL(
-      Math.random() * 0.2 + 0.5,
-      0.75,
-      Math.random() * 0.25 + 0.75,
-      THREE.SRGBColorSpace,
-    );
-
-    const box = new THREE.Mesh(boxGeometry, boxMaterial);
-    // Posición aleatoria para la caja
-    box.position.x = Math.floor(Math.random() * 20 - 10) * 20;
+    // Mismo sistema de posicionamiento en cuadrícula que antes
+    box.position.x = (Math.floor(Math.random() * 20) - 10) * 20;
     box.position.y = Math.floor(Math.random() * 20) * 20 + 10;
-    box.position.z = Math.floor(Math.random() * 20 - 10) * 20;
+    box.position.z = (Math.floor(Math.random() * 20) - 10) * 20;
 
     scene.add(box);
-    objects.push(box); // Añade la caja al array de objetos colisionables
+    objects.push(box); // Añadir a objetos colisionables
   }
 }
-
 //----------------------------------------------------------------//
 //                          BUCLE DE ANIMACIÓN
 //----------------------------------------------------------------//
 function animate() {
-  const time = performance.now();
+  // DELTA TIME
+  dt = clock.getDelta(); // Esto devuelve el tiempo en segundos desde el último frame
 
-  // Solo actualiza si los controles están activos
+  // Física y Movimiento
   if (controls.isLocked === true) {
-    // Configura el rayo para detección de colisiones (apuntando hacia abajo desde la cámara)
+    // COLISION
     raycaster.ray.origin.copy(controls.object.position);
-    raycaster.ray.origin.y -= 10; // Ajusta la posición del rayo
+    raycaster.ray.origin.y -= 10;
+    const onObject = raycaster.intersectObjects(objects, false).length > 0;
 
-    // Detecta colisiones con objetos
-    const intersections = raycaster.intersectObjects(objects, false);
-    const onObject = intersections.length > 0; // ¿Está el jugador sobre un objeto?
+    // Fisica - Friccion
+    velocity.x -= velocity.x * 10.0 * dt;
+    velocity.z -= velocity.z * 10.0 * dt;
+    // Fisica - Gravedad
+    velocity.y -= 9.8 * 100.0 * dt;
 
-    // Calcula el tiempo transcurrido desde el último frame (en segundos)
-    const delta = (time - prevTime) / 1000;
-
-    // Aplica fricción al movimiento horizontal
-    velocity.x -= velocity.x * 10.0 * delta;
-    velocity.z -= velocity.z * 10.0 * delta;
-
-    // Aplica gravedad (masa = 100.0)
-    velocity.y -= 9.8 * 100.0 * delta;
-
-    // Calcula la dirección del movimiento basado en las teclas presionadas
+    // Fisica - Direccion del Movimiento
     direction.z = Number(moveForward) - Number(moveBackward);
     direction.x = Number(moveRight) - Number(moveLeft);
-    direction.normalize(); // Normaliza para mantener velocidad constante en diagonales
+    direction.normalize();
 
-    // Aplica fuerza de movimiento según las teclas
-    if (moveForward || moveBackward) velocity.z -= direction.z * 400.0 * delta;
-    if (moveLeft || moveRight) velocity.x -= direction.x * 400.0 * delta;
+    // Fisica - Tecla Presionada
+    if (moveForward || moveBackward) velocity.z -= direction.z * 400.0 * dt;
+    if (moveLeft || moveRight) velocity.x -= direction.x * 400.0 * dt;
 
-    // Si está sobre un objeto, permite saltar y elimina velocidad vertical negativa
-    if (onObject === true) {
+    // Fisica - Salto
+    if (onObject) {
       velocity.y = Math.max(0, velocity.y);
       canJump = true;
     }
 
-    // Mueve al jugador según la velocidad calculada
-    controls.moveRight(-velocity.x * delta); // Movimiento horizontal (eje X)
-    controls.moveForward(-velocity.z * delta); // Movimiento frontal (eje Z)
-    controls.object.position.y += velocity.y * delta; // Movimiento vertical (eje Y)
+    // APLICAR MOVIMIENTO CALCULADO
+    controls.moveRight(-velocity.x * dt);
+    controls.moveForward(-velocity.z * dt);
+    controls.object.position.y += velocity.y * dt;
 
-    // Limita la posición mínima en Y (evita caer indefinidamente)
+    // LIMITE INFERIOR (evitar caer indefinidamente)
     if (controls.object.position.y < 10) {
-      velocity.y = 0;
       controls.object.position.y = 10;
+      velocity.y = 0;
       canJump = true;
     }
   }
 
-  // Actualiza el tiempo del último frame
-  prevTime = time;
-
-  // Renderiza la escena
   renderer.render(scene, camera);
+  stats.update();
 }
