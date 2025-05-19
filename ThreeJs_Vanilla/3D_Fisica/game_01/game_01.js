@@ -60,6 +60,7 @@ const World = new WorldBuilder(scene);
 World.SkyPiso([0.5, 1, 0.75]); // Configura el cielo y el piso
 World.Fog(0, 750, 0xffffff); // Opcional: configura niebla
 World.Bg(0xffffff); // Opcional: configura color de fondo
+World.Axis();
 
 //----------------------------------------------------------------//
 //                          INICIALIZACIÓN
@@ -205,25 +206,38 @@ function init() {
 //----------------------------------------------------------------//
 function animate() {
   // DELTA TIME
-  dt = clock.getDelta(); // Esto devuelve el tiempo en segundos desde el último frame
+  // ==> Permite usa Calculo por Segundo
+  // ==> Sin el las Fisicas se darias por Frame
+  dt = clock.getDelta();
 
   // Física y Movimiento
+  // ==> Cuendo el FP este Activado
   if (controls.isLocked === true) {
     // COLISION
     raycaster.ray.origin.copy(controls.object.position);
     raycaster.ray.origin.y -= 10;
     const onObject = raycaster.intersectObjects(objects, false).length > 0;
 
-    // Fisica - Friccion
+    //-------------------
+    //  Plano Cartesiano
+    //-------------------
+
+    // ==> y (Arriba Abajo)
+    // ==> x (Derecha e Izquierda)
+    // ==> z (Atraz Adelante)
+
+    // Fisica - FRICCION
+    // ==> Sin el codigo no hay freno igual a Patinar
     velocity.x -= velocity.x * 10.0 * dt;
     velocity.z -= velocity.z * 10.0 * dt;
+
     // Fisica - Gravedad
     velocity.y -= 9.8 * 100.0 * dt;
 
     // Fisica - Direccion del Movimiento
-    direction.z = Number(moveForward) - Number(moveBackward);
-    direction.x = Number(moveRight) - Number(moveLeft);
-    direction.normalize();
+    direction.z = Number(moveForward) - Number(moveBackward); // Ej: 1 (adelante) o -1 (atrás)
+    direction.x = Number(moveRight) - Number(moveLeft); // Ej: 1 (derecha) o -1 (izquierda)
+    direction.normalize(); // Asegura que el movimiento diagonal no sea más rápido
 
     // Fisica - Tecla Presionada
     if (moveForward || moveBackward) velocity.z -= direction.z * 400.0 * dt;
@@ -240,7 +254,8 @@ function animate() {
     controls.moveForward(-velocity.z * dt);
     controls.object.position.y += velocity.y * dt;
 
-    // LIMITE INFERIOR (evitar caer indefinidamente)
+    // LIMITE INFERIOR
+    // ==> Maximo que puede Llegar hacia abajo
     if (controls.object.position.y < 10) {
       controls.object.position.y = 10;
       velocity.y = 0;

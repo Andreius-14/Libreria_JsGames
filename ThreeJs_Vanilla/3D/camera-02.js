@@ -1,40 +1,25 @@
 import * as THREE from "three";
-
-import Stats from "three/addons/libs/stats.module.js";
-
 import { create, config, extra } from "../JS-Shared/threejs/Core/Escena.js";
-
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
-import { LineMaterial } from "three/addons/lines/LineMaterial.js";
-import { Wireframe } from "three/addons/lines/Wireframe.js";
-import { WireframeGeometry2 } from "three/addons/lines/WireframeGeometry2.js";
+import Stats from "three/addons/libs/stats.module.js";
+import { colorCss } from "../JS-Shared/Shared-Const.js";
+import { WorldBuilder } from "../JS-Shared/threejs/Core/World.js";
 
-let wireframe, renderer, scene, camera, camera2, controls, container;
-let wireframe1;
-let matLine, matLineBasic, matLineDashed;
-let stats;
-let gui;
-
-// viewport
-let insetWidth;
-let insetHeight;
+let renderer, scene, camera, camera2, controls, stats, gui, container;
+let cube; // Objeto simple para estudio
+let insetWidth, insetHeight;
 
 init();
 
 function init() {
   //----------------------------------------------------------------//
-  //                        CORE
+  //                        CORE (sin cambios)
   //----------------------------------------------------------------//
-
   container = create.contenedor();
   renderer = create.renderer();
   scene = create.scene();
-
   camera = create.camera({ pov: 40, near: 1, far: 1000 });
   camera2 = create.camera({ pov: 40, aspect: 1, near: 1, far: 1000 });
-  camera.position.set(-50, 0, 50);
-  camera2.position.copy(camera.position);
-
   stats = create.stats(container);
   controls = create.controls(camera, renderer);
 
@@ -42,189 +27,91 @@ function init() {
   config.Renderer(renderer, container);
   config.Animation(renderer, animate);
   config.Controls(controls, { stopFloor: false });
-
   extra.Controls(controls, { min: 10, max: 500 });
 
+  camera.position.set(-50, 0, 50);
+  camera2.position.copy(camera.position);
+
+  const World = new WorldBuilder(scene);
+  World.Grid(200);
+  World.Axis();
+
   //----------------------------------------------------------------//
-  //                        ELEMENTOS
+  //                        CUBO SIMPLE (reemplazo)
   //----------------------------------------------------------------//
-  // Wireframe ( WireframeGeometry2, LineMaterial )
-
-  let geo = new THREE.IcosahedronGeometry(20, 1);
-
-  const geometry = new WireframeGeometry2(geo);
-
-  matLine = new LineMaterial({
+  const geometry = new THREE.BoxGeometry(10, 10, 10);
+  const material = new THREE.MeshBasicMaterial({
     color: 0x4080ff,
-    linewidth: 5, // in pixels
-    dashed: false,
+    wireframe: true, // Mantenemos estilo de wireframe para el estudio
   });
-
-  wireframe = new Wireframe(geometry, matLine);
-  wireframe.computeLineDistances();
-  wireframe.scale.set(1, 1, 1);
-  scene.add(wireframe);
-
-  // Line ( THREE.WireframeGeometry, THREE.LineBasicMaterial ) - rendered with gl.LINE
-
-  //===========================================================MODO 01
-  geo = new THREE.WireframeGeometry(geo);
-
-  matLineBasic = new THREE.LineBasicMaterial({ color: 0x4080ff });
-  matLineDashed = new THREE.LineDashedMaterial({
-    scale: 2,
-    dashSize: 1,
-    gapSize: 1,
-  });
-
-  //===========================================================MODO 02
-  wireframe1 = new THREE.LineSegments(geo, matLineBasic);
-  wireframe1.computeLineDistances();
-  wireframe1.visible = false;
-  scene.add(wireframe1);
+  cube = new THREE.Mesh(geometry, material);
+  scene.add(cube);
 
   initGui();
-
   window.addEventListener("resize", onWindowResize);
   onWindowResize();
 }
 
 function onWindowResize() {
-  //Variables
-  const [w, h] = [globalThis.innerWidth, globalThis.innerHeight];
-
-  insetWidth = h / 4; // square
+  const [w, h] = [window.innerWidth, window.innerHeight];
+  insetWidth = h / 4;
   insetHeight = h / 4;
 
-  //Camara1
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
 
-  //Camara2
   camera2.aspect = insetWidth / insetHeight;
   camera2.updateProjectionMatrix();
 
-  //Extra
   renderer.setSize(w, h);
 }
 
 function animate() {
-  // main scene
+  // Rotación básica para visualización
+  cube.rotation.x += 0.01;
+  cube.rotation.y += 0.01;
 
-  renderer.setClearColor(0x000000, 0);
-
+  // Render vista principal
+  // renderer.setClearColor(colorCss.darkGray);
   renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-
-  //e
   renderer.render(scene, camera);
 
-  // inset scene
-
-  renderer.setClearColor(0x222222, 1);
-
-  renderer.clearDepth(); // important!
+  // Render vista inset
+  // renderer.setClearColor(colorCss.black);
+  renderer.clearDepth();
 
   renderer.setScissorTest(true);
-
   renderer.setScissor(20, 20, insetWidth, insetHeight);
-
   renderer.setViewport(20, 20, insetWidth, insetHeight);
 
   camera2.position.copy(camera.position);
   camera2.quaternion.copy(camera.quaternion);
-
-  //e
   renderer.render(scene, camera2);
 
   renderer.setScissorTest(false);
 
+  // Extra
   stats.update();
   controls.update();
 }
 
 function initGui() {
   gui = new GUI();
-
-  const param = {
-    "line type": 0,
-    "width (px)": 5,
-    dashed: false,
-    "dash scale": 1,
-    "dash / gap": 1,
+  const params = {
+    Rotación: true,
+    Tamaño: 10,
+    Color: "#4080ff",
   };
 
-  gui
-    .add(param, "line type", { LineGeometry: 0, "gl.LINE": 1 })
-    .onChange(function (val) {
-      switch (val) {
-        case 0:
-          wireframe.visible = true;
-
-          wireframe1.visible = false;
-
-          break;
-
-        case 1:
-          wireframe.visible = false;
-
-          wireframe1.visible = true;
-
-          break;
-      }
-    });
-
-  gui.add(param, "width (px)", 1, 10).onChange(function (val) {
-    matLine.linewidth = val;
+  gui.add(params, "Rotación").onChange((val) => {
+    cube.rotation.set(0, 0, 0); // Reset al cambiar
   });
 
-  gui.add(param, "dashed").onChange(function (val) {
-    matLine.dashed = val;
-
-    // dashed is implemented as a defines -- not as a uniform. this could be changed.
-    // ... or THREE.LineDashedMaterial could be implemented as a separate material
-    // temporary hack - renderer should do this eventually
-    if (val) matLine.defines.USE_DASH = "";
-    else delete matLine.defines.USE_DASH;
-    matLine.needsUpdate = true;
-
-    wireframe1.material = val ? matLineDashed : matLineBasic;
+  gui.add(params, "Tamaño", 5, 20).onChange((val) => {
+    cube.scale.set(val / 10, val / 10, val / 10);
   });
 
-  gui.add(param, "dash scale", 0.5, 1, 0.1).onChange(function (val) {
-    matLine.dashScale = val;
-    matLineDashed.scale = val;
+  gui.addColor(params, "Color").onChange((val) => {
+    cube.material.color.set(val);
   });
-
-  gui
-    .add(param, "dash / gap", { "2 : 1": 0, "1 : 1": 1, "1 : 2": 2 })
-    .onChange(function (val) {
-      switch (val) {
-        case 0:
-          matLine.dashSize = 2;
-          matLine.gapSize = 1;
-
-          matLineDashed.dashSize = 2;
-          matLineDashed.gapSize = 1;
-
-          break;
-
-        case 1:
-          matLine.dashSize = 1;
-          matLine.gapSize = 1;
-
-          matLineDashed.dashSize = 1;
-          matLineDashed.gapSize = 1;
-
-          break;
-
-        case 2:
-          matLine.dashSize = 1;
-          matLine.gapSize = 2;
-
-          matLineDashed.dashSize = 1;
-          matLineDashed.gapSize = 2;
-
-          break;
-      }
-    });
 }

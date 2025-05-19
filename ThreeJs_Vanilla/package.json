@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "cannon-es": "^0.20.0",
     "lil-gui": "^0.20.0",
     "standard": "^17.1.2",
     "vite": "^6.3.1"

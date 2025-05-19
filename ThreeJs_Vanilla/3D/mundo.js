@@ -40,13 +40,7 @@ function init() {
   scene = create.scene();
   renderer = create.renderer();
   stats = create.stats(container);
-  // // PERSPECTIVA FIRST PERSON (con bloqueo del cursor)
-  // controls = create.controlFP(camera, container, {
-  //   evento: true,
-  //   // escena: scene,
-  // });
   controls = create.controls(camera, container);
-  // Añade el objeto de controles a la escena
 
   // CONFIG
   config.Estilos();
@@ -77,7 +71,7 @@ function init() {
   Luces.Sol({ position: [-3, 5, -10] });
 
   //----------------------------------------------------------------//
-  //                        GEOMETRIA - INICIO
+  //                        GEOMETRIA
   //----------------------------------------------------------------//
 
   const rutaMap = "../../assets/2k_earth_daymap.jpg";
@@ -99,15 +93,6 @@ function init() {
   Texturas.AddImageNormalMap(mesh, rutaNmap, [20, 20]);
   Texturas.AddImageAO(mesh, rutaAO);
   Texturas.AddImageAlphaMap(niebla, rutaAM);
-
-  // Al hacer click se activa el control
-  // document.body.addEventListener("click", () => {
-  //   controls.lock();
-  // });
-  // Agrega el objeto de control a la escena
-  //----------------------------------------------------------------//
-  //                        GEOMETRIA - FIN
-  //----------------------------------------------------------------//
 }
 
 function animate() {

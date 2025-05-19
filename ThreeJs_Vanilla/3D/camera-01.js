@@ -2,17 +2,19 @@
 import * as THREE from "three";
 import GUI from "lil-gui";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js"; // Control de Camara
-import { create, extra } from "../JS-Shared/threejs/Core/Escena";
+import { create, extra } from "../JS-Shared/threejs/Core/Escena.js";
+import { colorCss } from "../JS-Shared/Shared-Const.js";
 // DOM ELEMENTS
 const canvas = document.querySelector("#c");
 const view1Elem = document.querySelector("#view1");
 const view2Elem = document.querySelector("#view2");
 const view3Elem = document.querySelector("#view3");
 
-// RENDERER
+// RENDERER -- COMPRENDIDO
+const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer({ canvas });
 
-// CAMERA SETTINGS
+// CAMERA SETTINGS -- COMPRENDIDO
 const fov = 45;
 // const aspect = globalThis.innerWidth / globalThis.innerHeight;
 const aspect = 2; // Canvas default
@@ -20,7 +22,7 @@ const near = 5;
 const far = 100;
 const objetivoControls = [0, 5, 0];
 
-// CAMERAS
+// CAMERAS -- COMPRENDIDO
 
 const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 camera.position.set(0, 10, 20);
@@ -34,7 +36,7 @@ const camera3 = new THREE.PerspectiveCamera(fov, aspect, near, far);
 camera3.position.set(10, 10, 20);
 const camera3Helper = new THREE.CameraHelper(camera3);
 
-// ORBIT CONTROLS
+// ORBIT CONTROLS -- COMPRENDIDO
 const controls = create.controls(camera, view1Elem);
 const controls2 = create.controls(camera2, view2Elem);
 const controls3 = create.controls(camera3, view3Elem);
@@ -94,14 +96,14 @@ function main() {
   f3.close();
 
   // SCENE SETUP
-  const scene = new THREE.Scene();
   scene.background = new THREE.Color("black");
   const axesHelper = new THREE.AxesHelper(40);
   scene.add(axesHelper);
   scene.add(cameraHelper);
   scene.add(camera3Helper);
 
-  // FLOOR
+  // FLOOR -- COMPRENDIDO
+
   {
     const planeSize = 40;
     const loader = new THREE.TextureLoader();
@@ -123,7 +125,8 @@ function main() {
     scene.add(mesh);
   }
 
-  // CUBE
+  // CUBE -- COMPRENDIDO
+
   {
     const cubeSize = 4;
     const cubeGeo = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
@@ -133,7 +136,8 @@ function main() {
     scene.add(mesh);
   }
 
-  // SPHERE
+  // SPHERE -- COMPRENDIDO
+
   {
     const sphereRadius = 3;
     const sphereGeo = new THREE.SphereGeometry(sphereRadius, 32, 16);
@@ -143,7 +147,8 @@ function main() {
     scene.add(mesh);
   }
 
-  // LIGHTING
+  // LIGHTING -- COMPRENDIDO
+
   {
     const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(0, 10, 0);
@@ -152,32 +157,32 @@ function main() {
     scene.add(light.target);
   }
 
+  // CONFIGURACION
+
   // UTILITY FUNCTIONS
   function resizeRendererToDisplaySize(renderer) {
     const canvas = renderer.domElement;
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
     const needResize = canvas.width !== width || canvas.height !== height;
-    if (needResize) {
-      renderer.setSize(width, height, false);
-    }
+
+    if (needResize) renderer.setSize(width, height, false);
     return needResize;
   }
 
   function setScissorForElement(elem) {
-    const canvasRect = canvas.getBoundingClientRect();
-    const elemRect = elem.getBoundingClientRect();
+    const can = canvas.getBoundingClientRect();
+    const ele = elem.getBoundingClientRect();
 
-    const right = Math.min(elemRect.right, canvasRect.right) - canvasRect.left;
-    const left = Math.max(0, elemRect.left - canvasRect.left);
-    const bottom =
-      Math.min(elemRect.bottom, canvasRect.bottom) - canvasRect.top;
-    const top = Math.max(0, elemRect.top - canvasRect.top);
+    const right = Math.min(ele.right, can.right) - can.left;
+    const left = Math.max(0, ele.left - can.left);
+    const bottom = Math.min(ele.bottom, can.bottom) - can.top;
+    const top = Math.max(0, ele.top - can.top);
 
-    const width = Math.min(canvasRect.width, right - left);
-    const height = Math.min(canvasRect.height, bottom - top);
+    const width = Math.min(can.width, right - left);
+    const height = Math.min(can.height, bottom - top);
 
-    const positiveYUpBottom = canvasRect.height - bottom;
+    const positiveYUpBottom = can.height - bottom;
     renderer.setScissor(left, positiveYUpBottom, width, height);
     renderer.setViewport(left, positiveYUpBottom, width, height);
 
@@ -191,37 +196,38 @@ function main() {
 
     // Render view 1
     {
-      const aspect = setScissorForElement(view1Elem);
+      const aspect = setScissorForElement(view1Elem); //El Div
       camera.aspect = aspect;
       camera.updateProjectionMatrix();
+
       cameraHelper.update();
       cameraHelper.visible = false;
       camera3Helper.visible = false;
-      scene.background.set(0x000000);
+
       renderer.render(scene, camera);
     }
+    // Render view 2
+    {
+      const aspect = setScissorForElement(view2Elem); // El Div
+      camera2.aspect = aspect;
+      camera2.updateProjectionMatrix();
 
+      cameraHelper.visible = true;
+      camera3Helper.visible = true;
+
+      renderer.render(scene, camera2);
+    }
     // Render view 3
     {
-      const aspect = setScissorForElement(view3Elem);
+      const aspect = setScissorForElement(view3Elem); //Eldiv
       camera3.aspect = aspect;
       camera3.updateProjectionMatrix();
+
       camera3Helper.update();
       cameraHelper.visible = false;
       camera3Helper.visible = false;
-      scene.background.set(0x000000);
-      renderer.render(scene, camera3);
-    }
 
-    // Render view 2
-    {
-      const aspect = setScissorForElement(view2Elem);
-      camera2.aspect = aspect;
-      camera2.updateProjectionMatrix();
-      cameraHelper.visible = true;
-      camera3Helper.visible = true;
-      scene.background.set(0x000040);
-      renderer.render(scene, camera2);
+      renderer.render(scene, camera3);
     }
 
     requestAnimationFrame(render);
