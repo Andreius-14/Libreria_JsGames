@@ -18,7 +18,7 @@ import { Anime } from "../JS-Shared/threejs/animate.js";
 let World, Light;
 
 let scene, renderer, camera, floor, orbitControls;
-let group, followGroup, model, skeleton, mixer, clock;
+let group, followGroup, model, animations, skeleton, mixer, clock;
 
 let actions;
 
@@ -31,15 +31,21 @@ const PI = Math.PI;
 const PI90 = Math.PI / 2;
 
 const controls = {
-  key: [0, 0],
-  ease: new THREE.Vector3(),
-  position: new THREE.Vector3(),
   up: new THREE.Vector3(0, 1, 0),
+  ease: new THREE.Vector3(),
   rotate: new THREE.Quaternion(),
-  current: "Idle",
+  position: new THREE.Vector3(),
+
+  key: [0, 0],
   fadeDuration: 0.5,
+
+  //Animacion
+  current: "Idle",
+
+  //Constantes
   runVelocity: 5,
   walkVelocity: 1.8,
+
   rotateSpeed: 0.05,
   floorDecale: 0,
 };
@@ -70,7 +76,7 @@ function init() {
 
   evento.Resize(camera, renderer);
   evento.FullScreen(renderer);
-
+  evento.Clean(renderer, scene);
   //----------------------------------------------------------------//
   //                            ESCENA
   //----------------------------------------------------------------//
@@ -85,7 +91,7 @@ function init() {
   Light = new LightBuilder(scene);
 
   World.Bg(0x5e5d5d);
-  // World.SkyPiso();
+  World.SkyPiso();
   World.Fog(2, 20, 0x5e5d5d);
 
   const dirLight = Light.Sol({ intensity: 5, position: [-2, 5, -3] });
@@ -165,117 +171,85 @@ function addFloor() {
 }
 
 async function loadModel() {
-  // const loader = Model.Loader();
-  let animations;
   const ruta = "../assets/Soldier/Soldier.glb";
 
-  [model, animations] = await Model.load(scene, ruta, {
-    optimizado: true,
+  [model, animations] = await Model.load(scene, ruta, { optimizado: true });
+
+  // model = gltf.scene;
+  group.add(model);
+  model.rotation.y = PI;
+  group.rotation.y = PI;
+
+  // Configura: Material del Modelo
+  model.traverse(function (object) {
+    if (object.isMesh) {
+      if (object.name == "vanguard_Mesh") {
+        object.castShadow = true;
+        object.receiveShadow = true;
+        object.material.shadowSide = THREE.DoubleSide;
+        //object.material.envMapIntensity = 0.5;
+        object.material.metalness = 1.0;
+        object.material.roughness = 0.2;
+        object.material.color.set(1, 1, 1);
+        object.material.metalnessMap = object.material.map;
+      } else {
+        object.material.metalness = 1;
+        object.material.roughness = 0;
+        object.material.transparent = true;
+        object.material.opacity = 0.8;
+        object.material.color.set(1, 1, 1);
+      }
+    }
   });
 
-  {
-    // model = gltf.scene;
-    group.add(model);
-    model.rotation.y = PI;
-    group.rotation.y = PI;
+  skeleton = Model.skeletonHelper(scene, model);
+  mixer = Anime.createMixer(model);
+  actions = Anime.groupAnimation(mixer, animations);
 
-    model.traverse(function (object) {
-      if (object.isMesh) {
-        if (object.name == "vanguard_Mesh") {
-          object.castShadow = true;
-          object.receiveShadow = true;
-          object.material.shadowSide = THREE.DoubleSide;
-          //object.material.envMapIntensity = 0.5;
-          object.material.metalness = 1.0;
-          object.material.roughness = 0.2;
-          object.material.color.set(1, 1, 1);
-          object.material.metalnessMap = object.material.map;
-        } else {
-          object.material.metalness = 1;
-          object.material.roughness = 0;
-          object.material.transparent = true;
-          object.material.opacity = 0.8;
-          object.material.color.set(1, 1, 1);
-        }
-      }
-    });
+  // console.log(Object.keys(actions));
 
-    skeleton = Model.skeletonHelper(scene, model);
-    mixer = Anime.createMixer(model);
-    actions = Anime.groupAnimation(mixer, animations);
-
-    //Configuracion A Animaciones
-    for (const m in actions) {
-      actions[m].enabled = true;
-      actions[m].setEffectiveTimeScale(1);
-      if (m !== "Idle") actions[m].setEffectiveWeight(0);
-    }
-
-    actions.Idle.play();
-
-    createPanel();
-    animate();
+  //Configura: Propiedades de Material
+  for (const m in actions) {
+    actions[m].enabled = true;
+    actions[m].setEffectiveTimeScale(1);
+    if (m !== "Idle") actions[m].setEffectiveWeight(0);
   }
-  // Config Actions
-  // for (const key in actions) {
-  //   if (emotes.indexOf(key) >= 0 || states.indexOf(key) >= 4) {
-  //     Anime.configAnimations(actions[key], Anime.loop.one, true);
-  //   }
-  // }
 
-  // actions = {
-  //   Idle: mixer.clipAction(animations[0]),
-  //   Walk: mixer.clipAction(animations[3]),
-  //   Run: mixer.clipAction(animations[1]),
-  // };
+  actions.Idle.play();
+
+  createPanel();
+  animate();
 }
 
 function updateCharacter(delta) {
-  const fade = controls.fadeDuration;
-  const key = controls.key;
   const up = controls.up;
   const ease = controls.ease;
   const rotate = controls.rotate;
   const position = controls.position;
+
+  const key = controls.key;
+  const fade = controls.fadeDuration;
+
   const azimuth = orbitControls.getAzimuthalAngle();
 
+  //¿Se esta Presionando?
   const active = key[0] === 0 && key[1] === 0 ? false : true;
+  // Selecciona (Name-Action)
   const play = active ? (key[2] ? "Run" : "Walk") : "Idle";
 
-  // change animation
-
-  if (controls.current != play) {
-    const current = actions[play];
-    const old = actions[controls.current];
-    controls.current = play;
-
-    if (settings.fixe_transition) {
-      current.reset();
-      current.weight = 1.0;
-      current.stopFading();
-      old.stopFading();
-      // synchro if not idle
-      if (play !== "Idle")
-        current.time =
-          old.time * (current.getClip().duration / old.getClip().duration);
-      old._scheduleFading(fade, old.getEffectiveWeight(), 0);
-      current._scheduleFading(fade, current.getEffectiveWeight(), 1);
-      current.play();
-    } else {
-      setWeight(current, 1.0);
-      old.fadeOut(fade);
-      current.reset().fadeIn(fade).play();
-    }
-  }
+  // Anime.SoftDura(actions, play, controls);
+  Anime.SoftChange(actions, play, controls);
 
   // move object
 
   if (controls.current !== "Idle") {
-    // run/walk velocity
+    // Aplica Velocidad
+    // Selecciona Velocidad A Usar
     const velocity =
       controls.current == "Run" ? controls.runVelocity : controls.walkVelocity;
 
     // direction with key
+    // Desplazamiento [x,y,z]
     ease.set(key[1], 0, key[0]).multiplyScalar(velocity * delta);
 
     // calculate camera direction
@@ -310,20 +284,26 @@ function unwrapRad(r) {
   return Math.atan2(Math.sin(r), Math.cos(r));
 }
 
+//
+//
+
+function animate() {
+  // Render loop
+
+  const delta = clock.getDelta();
+
+  updateCharacter(delta);
+
+  renderer.render(scene, camera);
+}
+
 function createPanel() {
   const panel = new GUI({ width: 310 });
 
   panel.add(settings, "show_skeleton").onChange((b) => {
     skeleton.visible = b;
   });
-
   panel.add(settings, "fixe_transition");
-}
-
-function setWeight(action, weight) {
-  action.enabled = true;
-  action.setEffectiveTimeScale(1);
-  action.setEffectiveWeight(weight);
 }
 
 function onKeyDown(event) {
@@ -347,11 +327,14 @@ function onKeyDown(event) {
     case "KeyD":
       key[1] = 1;
       break;
+
+    // Activa Aceleracion
     case "ShiftLeft":
     case "ShiftRight":
       key[2] = 1;
       break;
   }
+  // console.log(controls.key);
 }
 
 function onKeyUp(event) {
@@ -380,20 +363,4 @@ function onKeyUp(event) {
       key[2] = 0;
       break;
   }
-}
-//
-// function onWindowResize() {
-//   camera.aspect = window.innerWidth / window.innerHeight;
-//   camera.updateProjectionMatrix();
-//   renderer.setSize(window.innerWidth, window.innerHeight);
-// }
-
-function animate() {
-  // Render loop
-
-  const delta = clock.getDelta();
-
-  updateCharacter(delta);
-
-  renderer.render(scene, camera);
 }
